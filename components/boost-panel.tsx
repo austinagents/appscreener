@@ -47,7 +47,7 @@ export function BoostPanel({ tiers }: { tiers: BoostTier[] }) {
             <li>Launch & update</li>
             <li>Performance insights</li>
           </ul>
-          <button type="button">List your product →</button>
+          <button type="button">List your product</button>
         </div>
         <div className="boostMarketplaceCard">
           <span className="boostKicker"><Users size={14} /> Creators</span>
@@ -58,7 +58,7 @@ export function BoostPanel({ tiers }: { tiers: BoostTier[] }) {
             <li>Revenue & payouts</li>
             <li>Creator insights</li>
           </ul>
-          <button type="button">Match with brands →</button>
+          <button type="button">Match with brands</button>
         </div>
       </div>
     </section>
