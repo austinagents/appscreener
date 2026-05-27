@@ -18,7 +18,7 @@ export function CreatorCard({ creator }: { creator: CreatorProfile }) {
       </span>
       <div className="creatorTagRail">
         {publicCreatorTags(creator).slice(0, 5).map((tag) => (
-          <a className="creatorTagLink" href={`/creators/tags/${creatorTagSlug(tag)}`} key={tag} style={creatorTagStyle(tag)}>{creatorTagDisplayLabel(tag)}</a>
+          <a className="creatorTagLink" href={`/tags/${creatorTagSlug(tag)}`} key={tag} style={creatorTagStyle(tag)}>{creatorTagDisplayLabel(tag)}</a>
         ))}
       </div>
       <div className="creatorActionRail">

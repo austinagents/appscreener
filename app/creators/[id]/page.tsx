@@ -25,7 +25,7 @@ export default function CreatorPage({ params }: { params: { id: string } }) {
             <h1>{creator.name}</h1>
             <p>{[creator.handle, creator.platform, creator.followers ? `${creator.followers.toLocaleString()} followers` : ""].filter(Boolean).join(" · ")}</p>
             <div className="tagRail">
-              {tags.slice(0, 8).map((tag) => <a href={`/creators/tags/${creatorTagSlug(tag)}`} key={tag} style={creatorTagStyle(tag)}>{creatorTagDisplayLabel(tag)}</a>)}
+              {tags.slice(0, 8).map((tag) => <a href={`/tags/${creatorTagSlug(tag)}`} key={tag} style={creatorTagStyle(tag)}>{creatorTagDisplayLabel(tag)}</a>)}
             </div>
           </div>
         </div>
@@ -38,7 +38,7 @@ export default function CreatorPage({ params }: { params: { id: string } }) {
           <div className="panelHeader"><h2>Specialization Cluster</h2></div>
           <div className="miniList">
             {tags.map((tag) => (
-              <a className="miniRow" href={`/creators/tags/${creatorTagSlug(tag)}`} key={tag}>
+              <a className="miniRow" href={`/tags/${creatorTagSlug(tag)}`} key={tag}>
                 <span><strong>{creatorTagDisplayLabel(tag)}</strong><small>accepted creator taxonomy</small></span>
               </a>
             ))}

@@ -24,6 +24,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { ecosystemColorStyle } from "@/lib/ecosystem-colors";
+import { ecosystemTagSlug } from "@/lib/ecosystem-tags";
 import { displayCategory } from "@/lib/format";
 import type { AttentionSubCategory, Category } from "@/lib/types";
 import { MovementBadge } from "./movement-badge";
@@ -95,10 +96,10 @@ export function AttentionHeatmap({ items }: { items: AttentionSubCategory[] }) {
         </div>
         <div className="attentionClusterBody">
           {cluster.tags.map((tag) => (
-            <button className={`attentionNode heatmap-tag-button ${tag.size}`} key={tag.label} type="button">
+            <Link className={`attentionNode heatmap-tag-button ${tag.size}`} href={`/tags/${ecosystemTagSlug(tag.label)}`} key={tag.label}>
               <tag.icon size={tag.iconSize ?? 14} />
               <span>{tag.label}</span>
-            </button>
+            </Link>
           ))}
         </div>
       </section>
@@ -124,10 +125,10 @@ export function AttentionHeatmap({ items }: { items: AttentionSubCategory[] }) {
               </div>
               <div className="attentionClusterBody">
                 {centerpiece.tags.filter((tag) => tag.label !== "TikTok Clips").map((tag) => (
-                  <button className={`attentionNode heatmap-tag-button ${tag.size}`} key={tag.label} type="button">
+                  <Link className={`attentionNode heatmap-tag-button ${tag.size}`} href={`/tags/${ecosystemTagSlug(tag.label)}`} key={tag.label}>
                     <tag.icon size={tag.iconSize ?? 14} />
                     <span>{tag.label}</span>
-                  </button>
+                  </Link>
                 ))}
               </div>
             </section>
