@@ -10,8 +10,9 @@ The MVP is intentionally dark, dense, and terminal-inspired. It should feel like
 - Tool intelligence profiles at `/tools/[slug]` with local sidebar navigation, hero identity, trending snapshot, ecosystem reasons, creator/workflow sections, recent mentions, related tags, related tools, and nearby movers.
 - Dedicated `/heatmap` exploration page separate from the homepage heatmap widget.
 - Unified ecosystem tag route at `/tags/[tag]` for creator tags and heatmap attention tags.
-- Creator pages and creator tag pages with accepted-only public creator gating.
+- Creator pages and creator tag pages with accepted-only public creator gating and separated verified-tool versus mentioned-tool relationship surfaces.
 - Workflow pages and workflow listings backed by local workflow/tool relationships.
+- V1 Trusted Adoption Graph with accepted creator-tool, workflow-tool, and derived creator-workflow relationships, now locked to trust-safe V1 semantics.
 - Category pages backed by the shared category and ecosystem color systems.
 - Compare, Watchlist, Breaking Out, Moving, Events, Narratives, and private Operator routes.
 - LocalStorage watchlist behavior for tools, workflows, and categories.
@@ -114,6 +115,36 @@ Creator tagging infrastructure exists with:
 
 Public creator UI must only show accepted creators. Pending-review creators remain backend/operator-only. Do not restore fake creator personas.
 
+Creator profile relationship sections keep relationship types separate:
+
+- `uses` and `teaches` appear under "Verified Tool Relationships".
+- `mentions` appear under "Tools Mentioned".
+- Mentioned tools are not labeled as used tools or converted into verified adoption.
+
+### Trusted Adoption Graph
+
+V1 graph relationships are explicit local edge arrays in `lib/data.ts` with types in `lib/types.ts`.
+
+The first public graph layer includes:
+
+- creator-tool relationships
+- workflow-tool relationships
+- creator-workflow relationships
+
+Relationship arrays are the source of truth. Existing creator `toolSlugs` and `workflowSlugs` are derived from accepted relationships, while workflow `toolSlugs` are derived from accepted workflow-tool relationships.
+
+Only `accepted` relationships can power public UI. Pending or rejected relationships must remain hidden from public relationship surfaces.
+
+V1 distinguishes adoption from attention:
+
+- `uses` and `teaches` can support verified adoption surfaces.
+- `mentions` are a separate graph layer and must not be treated as verified usage.
+- Creator-workflow relationships are derived only from accepted adoption-style creator-tool overlap, not from mentions alone.
+
+Supported V1 creator-tool relationship types are `uses`, `teaches`, and `mentions`. Future-safe typed states exist for `recommends`, `builds_with`, `switched_to`, and `abandoned`, but they are not surfaced publicly yet.
+
+Current accepted V1 graph coverage: 26 creator-tool relationships, 20 adoption-style creator-tool relationships, 46 workflow-tool relationships, and 9 derived creator-workflow relationships.
+
 ### Tool Intelligence Profiles
 
 `/tools/[slug]` is the canonical AI product intelligence profile page.
@@ -124,7 +155,7 @@ Current structure:
 - hero identity card
 - Trending on AppScreener card
 - Why is this trending?
-- Who is using this?
+- Creators connected to this tool
 - Popular in these workflows
 - Recent mentions
 - About metadata rail
@@ -144,6 +175,9 @@ Current local relationships live primarily in `lib/data.ts`:
 - creator signals
 - relationship edges
 - categories
+- creator-tool relationships
+- workflow-tool relationships
+- creator-workflow relationships
 
 Relationship surfaces derive from:
 
@@ -155,6 +189,10 @@ Relationship surfaces derive from:
 - ecosystem tags
 
 Do not fabricate creator usage, social mentions, endorsements, or unsupported analytics. If a relationship is missing, use compact trust-safe empty states.
+
+Current V1 relationship coverage is intentionally small and trust-first. Aggregate tool metrics such as `creatorMentions` and `workflowInclusions` are movement signals, not proof of public creator attribution.
+
+Future creator and tool pages should keep verified adoption and frequent mentions separate rather than merging them into one social-proof bucket.
 
 ## Local Development Workflow
 
@@ -242,7 +280,7 @@ The current admin password logic is MVP-only and should move server-side before 
 AppScreener should answer:
 
 - What AI tools are moving?
-- Who is using them?
+- Which creators are connected to them?
 - Which workflows include them?
 - What tags/categories connect them?
 - Where is AI attention rotating?

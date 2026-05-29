@@ -1,6 +1,6 @@
 # AppScreener Project Status
 
-Last synced: 2026-05-28
+Last synced: 2026-05-29
 
 ## Current Platform State
 
@@ -26,7 +26,7 @@ AppScreener is an AI ecosystem intelligence MVP, not just a homepage MVP. It cur
   - hero/tool identity card
   - Trending on AppScreener card
   - Why is this trending?
-  - Who is using this?
+  - Creators connected to this tool
   - Popular in these workflows
   - Recent mentions
   - About metadata rail
@@ -41,6 +41,15 @@ AppScreener is an AI ecosystem intelligence MVP, not just a homepage MVP. It cur
 - Boost CTA arrows were removed; CTA buttons were subtly polished.
 - Dedicated `/heatmap` page was created as a separate exploration surface from the homepage Attention Heatmap.
 - Shared ecosystem tag directory was created through `lib/ecosystem-tags.ts`.
+- V1 Trusted Adoption Graph was added as the first public relationship layer.
+- Explicit accepted relationship arrays now power creator-tool, workflow-tool, and derived creator-workflow relationships.
+- Existing creator `toolSlugs` and `workflowSlugs` are now derived from accepted graph relationships instead of imported placeholder arrays.
+- V1 graph semantics now separate adoption relationships from mentions: creator `toolSlugs` and creator-workflow derivation use accepted `uses`/`teaches` relationships, while `mentions` remain a separate graph layer.
+- Creator and workflow profile stale pending states were cleaned up to reflect accepted graph relationships when they exist.
+- V1 Trusted Adoption Graph is now locked as the current relationship model: `uses`, `teaches`, and `mentions` are supported creator-tool relationship types; `recommends`, `builds_with`, `switched_to`, and `abandoned` remain typed for future use but are not surfaced publicly yet.
+- `/tools/[slug]` creator sections now use trust-safe "Creators connected to..." language, show only accepted `uses`/`teaches` badges, and exclude mention-only relationships from adoption-style creator cards.
+- Tool workflow cards no longer display seeded `creatorUsage` as public creator adoption; they only show verified creator relationship counts derived from accepted creator-workflow edges.
+- Creator profile pages now separate accepted creator-tool relationships into "Verified Tool Relationships" for `uses`/`teaches` and "Tools Mentioned" for `mentions`, with mention rows treated as attention signals rather than verified usage.
 
 ## Current Active Architecture
 
@@ -58,6 +67,10 @@ AppScreener is an AI ecosystem intelligence MVP, not just a homepage MVP. It cur
 - TAAFT import artifacts expand the tool universe.
 - Supabase schema exists but Supabase is not required for local runtime.
 - Creator import architecture exists, but pending-review creators stay hidden publicly.
+- V1 Trusted Adoption Graph relationships are modeled explicitly in `lib/data.ts` using typed edges from `lib/types.ts`.
+- Only accepted relationships power public creator/tool/workflow relationship surfaces.
+- Mentions are accepted relationship signals but do not become verified usage or workflow adoption.
+- Creator profiles surface accepted mention relationships separately as "Tools Mentioned" while keeping verified usage/teaching relationships distinct.
 
 ### Tag/Category Logic
 
@@ -141,11 +154,19 @@ API preview routes:
 - `lib/creator-tags.ts` contains approved creator taxonomy.
 - `lib/ecosystem-colors.ts` is the shared color foundation for ecosystem categories.
 - Workflow relationships currently come from local workflow/tool/creator data in `lib/data.ts`.
+- Workflow-tool relationships are explicit accepted graph edges derived from existing workflow stacks.
+- Creator-tool relationships begin with a small manually reviewed accepted seed set.
+- Creator-workflow relationships are conservatively derived from accepted creator-tool overlap with workflow stacks.
+- V1 creator-tool relationship types are locked to `uses`, `teaches`, and `mentions`; future-safe typed states exist for `recommends`, `builds_with`, `switched_to`, and `abandoned`, but they are not public UI signals yet.
+- Current accepted graph counts: 26 creator-tool relationships, 20 adoption-style creator-tool edges, 46 workflow-tool relationships, and 9 derived creator-workflow relationships.
 
 ## Known Issues
 
 - The Codex desktop UI sometimes displays `{"detail":"Bad Request"}` after tool calls. This has been a tool transport/UI issue, not necessarily an app failure. Verify with typecheck/build and file diffs.
 - Some `/tools/[slug]` pages have sparse creator/workflow/mention data. Empty states are intentional and trust-safe.
+- V1 creator-tool coverage is intentionally small and high-confidence; many tools still have no accepted public creator relationships.
+- Mention-only relationships are intentionally excluded from verified adoption sections.
+- Creator profiles may show mentioned tools even when verified usage is pending.
 - `npm run build` may show autoprefixer warnings about `start` support in CSS. Builds have still completed successfully.
 - Current ranking data is local/static seed logic. It is not true independent live timeframe aggregation.
 - `/tools/[slug]` left sidebar alignment was adjusted via route-specific CSS and may need a final visual check in browser.
@@ -157,16 +178,15 @@ API preview routes:
 - Confirm sidebar top alignment against hero/trending card top edge after latest offset.
 - Review mobile behavior for `/tools/[slug]`.
 - Review dedicated `/heatmap` page for density and interaction readiness.
-- Add real data sources for creator mentions and workflow adoption before surfacing stronger social proof.
+- Expand accepted creator-tool and creator-workflow relationship coverage before surfacing stronger social proof.
 
 ## Next Recommended Priorities
 
-1. Visually verify `/tools/[slug]` pages locally across several slugs.
-2. Run `npm run typecheck` and `npm run build` after the latest docs/state sync.
-3. Add real creator-tool/workflow relationships before expanding social proof modules.
-4. Build tag destination pages into stronger ecosystem hubs.
-5. Continue ingestion readiness without exposing backend provenance publicly.
-6. Eventually move admin/password protection server-side.
+1. Continue expanding the V1 Trusted Adoption Graph with accepted creator-tool relationships.
+2. Add stronger evidence/source capture for accepted relationship edges before exposing confidence UI.
+3. Improve search quality.
+4. Redesign `/heatmap` into a deeper exploration engine.
+5. Strengthen `/tags/[tag]` ecosystem hubs.
 
 ## Current Deployment / Runtime Workflow
 
@@ -197,3 +217,5 @@ Vercel is connected through GitHub. Avoid force-pushing unless the remote histor
 - `/tags/[tag]` is the canonical shared ecosystem tag route.
 - Public UI must not expose raw backend provenance labels.
 - Use trust-safe empty states instead of fake creator usage, fake mentions, or fake workflow claims.
+- Relationship arrays are the source of truth for public graph density; imported slug arrays are treated as inputs/placeholders, not public proof.
+- Uses/teaches relationships can support verified adoption surfaces; mentions must remain separate from usage claims.

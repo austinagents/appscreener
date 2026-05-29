@@ -196,6 +196,46 @@ export type CreatorSignal = {
 };
 
 export type CreatorPlatform = "YouTube" | "X" | "Reddit" | "Newsletter" | "TikTok" | "Instagram" | "LinkedIn" | "Website" | "Multi-platform" | "Unknown";
+export type RelationshipStatus = "accepted" | "pending_review" | "rejected";
+export type RelationshipSourceType = "manual" | "imported" | "derived" | "creator_post" | "profile_bio";
+
+export type CreatorToolRelationship = {
+  id: string;
+  creatorId: string;
+  toolSlug: string;
+  relationshipType: "uses" | "teaches" | "mentions" | "recommends" | "builds_with" | "switched_to" | "abandoned";
+  confidence: number;
+  status: RelationshipStatus;
+  sourceType: RelationshipSourceType;
+  sourceUrl?: string;
+  evidenceText?: string;
+  observedAt?: string;
+};
+
+export type WorkflowToolRelationship = {
+  id: string;
+  workflowSlug: string;
+  toolSlug: string;
+  role: "research" | "generation" | "editing" | "automation" | "publishing" | "analysis" | "infrastructure" | "other";
+  position?: number;
+  required?: boolean;
+  confidence: number;
+  status: RelationshipStatus;
+  sourceType: RelationshipSourceType;
+};
+
+export type CreatorWorkflowRelationship = {
+  id: string;
+  creatorId: string;
+  workflowSlug: string;
+  relationshipType: "uses" | "teaches" | "mentions" | "inferred_from_tools";
+  confidence: number;
+  status: RelationshipStatus;
+  sourceType: RelationshipSourceType;
+  sourceUrl?: string;
+  evidenceText?: string;
+  supportingToolSlugs?: string[];
+};
 
 export type CreatorProfile = {
   id: string;

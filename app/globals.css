@@ -245,6 +245,37 @@ p { color: var(--muted); line-height: 1.5; }
 .toolStack { display: flex; align-items: center; min-width: 80px; }
 .toolStack img { width: 24px; height: 24px; margin-right: -8px; border: 1px solid var(--line); background: #071015; }
 .toolStack span { display: grid; place-items: center; width: 24px; height: 24px; margin-left: 2px; border: 1px solid var(--green); color: var(--green); background: #07140f; font-size: 10px; }
+.creatorToolRelationshipGrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.creatorToolRelationshipRow {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 9px;
+  align-items: center;
+  padding: 9px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+}
+.creatorToolRelationshipRow strong,
+.creatorToolRelationshipRow small {
+  display: block;
+}
+.creatorToolRelationshipRow small {
+  color: var(--muted);
+}
+.creatorToolRelationshipBadge {
+  padding: 4px 7px;
+  border: 1px solid rgba(137, 220, 211, 0.25);
+  color: var(--text-soft);
+  background: rgba(137, 220, 211, 0.06);
+  font-size: 10px;
+  font-weight: 800;
+}
+.creatorToolRelationshipBadge.uses,
+.creatorToolRelationshipBadge.teaches {
+  border-color: rgba(34, 229, 139, 0.3);
+  color: var(--green);
+  background: rgba(34, 229, 139, 0.07);
+}
 .feed { display: grid; gap: 7px; }
 .feed article { padding: 9px; border: 1px solid var(--line); background: var(--panel); }
 .feed span { color: var(--green); font-size: 12px; }
@@ -1043,6 +1074,20 @@ p { color: var(--muted); line-height: 1.5; }
   color: var(--text-muted);
   font-size: 11px;
   font-style: normal;
+}
+
+.toolIntelCreatorCard .toolRelationshipBadge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 20px;
+  padding: 0 7px;
+  border: 1px solid rgba(34, 229, 139, 0.28);
+  border-radius: var(--radius-xs);
+  background: rgba(34, 229, 139, 0.08);
+  color: var(--accent-green);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
 }
 
 .toolIntelCreatorCard > span:last-child {
@@ -2517,7 +2562,7 @@ body {
   .topbar { grid-template-columns: 1fr; }
   .navTabs { overflow-x: auto; min-width: 0; }
   .searchBox { min-width: 0; }
-  .metricsStrip, .gridTwo, .gridTwo.wideLeft, .gridThree, .adminGrid, .heatmapGrid, .workflowGrid { grid-template-columns: 1fr; }
+  .metricsStrip, .gridTwo, .gridTwo.wideLeft, .gridThree, .adminGrid, .heatmapGrid, .workflowGrid, .creatorToolRelationshipGrid { grid-template-columns: 1fr; }
   .terminalStatus, .creatorGrid, .adminShell, .narrativeGrid, .discoveryChain { grid-template-columns: 1fr; }
   .heroTerminal, .detailHeader { align-items: flex-start; flex-direction: column; }
   .adminSidebar { position: static; }

@@ -6,7 +6,7 @@ import { logoAssets } from "./logo-assets";
 import { normalizeAudienceTags, normalizeCreatorSpecializations, normalizeCreatorTypes, normalizeInfluenceTags, normalizePlatformFocus, primarySpecializationFrom } from "./creator-tags";
 import { calculateListingScore, listingChecksForSeed, listingStatusFromChecks, trustedSourceUrls, trustedSourcesForSeed } from "./listing-policy";
 import { breakingOutScoreFor, estimateUsers, organicRankingLabel, organicTrendingScoreFor, rankingModeSort, sizeClassForUsers } from "./ranking";
-import type { AttentionFeedItem, AttentionSubCategory, BoostTier, Category, CategoryName, CreatorProfile, CreatorSignal, DiscoveryEdge, FeatureFlag, LogoSource, MovementEvent, Platform, PricingType, PromotionPlacement, Tool, Workflow } from "./types";
+import type { AttentionFeedItem, AttentionSubCategory, BoostTier, Category, CategoryName, CreatorProfile, CreatorSignal, CreatorToolRelationship, CreatorWorkflowRelationship, DiscoveryEdge, FeatureFlag, LogoSource, MovementEvent, Platform, PricingType, PromotionPlacement, Tool, Workflow, WorkflowToolRelationship } from "./types";
 
 const categoryNames: CategoryName[] = [
   "AI Video",
@@ -585,13 +585,49 @@ const workflowSeeds: Array<[string, string, string[], number, number, number, nu
   ["Podcast Repurposing Stack", "Convert long audio into clips, posts, show notes, and assets.", ["Descript", "ElevenLabs", "CapCut", "ChatGPT", "Notion AI"], 66, 22, 37, 2600, 31]
 ];
 
+function workflowToolRoleFor(workflowSlug: string, toolSlug: string): WorkflowToolRelationship["role"] {
+  if (["perplexity", "notebooklm", "glean"].includes(toolSlug)) return "research";
+  if (["cursor", "windsurf", "v0", "bolt", "lovable", "replit"].includes(toolSlug)) return "generation";
+  if (["kling", "pika", "runway", "capcut", "descript"].includes(toolSlug)) return "editing";
+  if (["zapier", "make", "lindy"].includes(toolSlug)) return "automation";
+  if (["gamma", "notion-ai", "linear"].includes(toolSlug)) return "publishing";
+  if (workflowSlug.includes("sales") || ["clay"].includes(toolSlug)) return "analysis";
+  if (["claude", "chatgpt", "elevenlabs", "suno", "midjourney", "ideogram", "heygen", "framer-ai"].includes(toolSlug)) return "generation";
+  return "other";
+}
+
+export const workflowToolRelationships: WorkflowToolRelationship[] = workflowSeeds.flatMap(([name, , toolNames]) => {
+  const workflowSlug = slugify(name);
+  return toolNames.map((toolName, index) => {
+    const toolSlug = slugify(toolName);
+    return {
+      id: `wtr_${workflowSlug}_${toolSlug}`,
+      workflowSlug,
+      toolSlug,
+      role: workflowToolRoleFor(workflowSlug, toolSlug),
+      position: index + 1,
+      required: index < 3,
+      confidence: 94,
+      status: "accepted",
+      sourceType: "manual"
+    };
+  });
+});
+
+function acceptedWorkflowToolSlugs(workflowSlug: string) {
+  return workflowToolRelationships
+    .filter((relationship) => relationship.status === "accepted" && relationship.workflowSlug === workflowSlug)
+    .sort((a, b) => (a.position ?? 99) - (b.position ?? 99))
+    .map((relationship) => relationship.toolSlug);
+}
+
 export const workflows: Workflow[] = workflowSeeds.map(([name, outcome, names, momentumScore, growth24h, growth7d, savesCount, creatorUsage], index) => ({
   id: `wf_${index + 1}`,
   name,
   slug: slugify(name),
   description: `${outcome} Tracks saves, movement, and tool-stack spread.`,
   outcome,
-  toolSlugs: names.map(slugify),
+  toolSlugs: acceptedWorkflowToolSlugs(slugify(name)),
   momentumScore,
   growth24h,
   growth7d,
@@ -608,8 +644,339 @@ export const movementEvents: MovementEvent[] = [
   { id: "event_5", toolSlug: "notebooklm", title: "YouTube spike for NotebookLM", description: "Research-to-audio demos are driving renewed discovery.", eventType: "youtube_spike", sourceUrl: "#", timestamp: "1 hr ago" }
 ];
 
+export const creatorToolRelationships: CreatorToolRelationship[] = [
+  {
+    id: "ctr_logan-kilpatrick_chatgpt",
+    creatorId: "creator_logan-kilpatrick",
+    toolSlug: "chatgpt",
+    relationshipType: "mentions",
+    confidence: 96,
+    status: "accepted",
+    sourceType: "manual",
+    sourceUrl: "https://x.com/OfficialLoganK",
+    evidenceText: "OpenAI developer relations creator publicly associated with ChatGPT ecosystem education."
+  },
+  {
+    id: "ctr_guillermo-rauch_v0",
+    creatorId: "creator_guillermo-rauch",
+    toolSlug: "v0",
+    relationshipType: "uses",
+    confidence: 98,
+    status: "accepted",
+    sourceType: "manual",
+    sourceUrl: "https://x.com/rauchg",
+    evidenceText: "Vercel creator/operator publicly associated with v0 product development and usage."
+  },
+  {
+    id: "ctr_lee-robinson_v0",
+    creatorId: "creator_lee-robinson",
+    toolSlug: "v0",
+    relationshipType: "teaches",
+    confidence: 95,
+    status: "accepted",
+    sourceType: "manual",
+    sourceUrl: "https://x.com/leeerob",
+    evidenceText: "Vercel creator publicly demos and explains v0 workflows."
+  },
+  {
+    id: "ctr_amjad-masad_replit",
+    creatorId: "creator_amjad-masad",
+    toolSlug: "replit",
+    relationshipType: "uses",
+    confidence: 99,
+    status: "accepted",
+    sourceType: "manual",
+    sourceUrl: "https://x.com/amasad",
+    evidenceText: "Replit founder publicly associated with Replit product development."
+  },
+  {
+    id: "ctr_simon-willison_chatgpt",
+    creatorId: "creator_simon-willison",
+    toolSlug: "chatgpt",
+    relationshipType: "teaches",
+    confidence: 94,
+    status: "accepted",
+    sourceType: "manual",
+    sourceUrl: "https://simonwillison.net/",
+    evidenceText: "Creator regularly publishes technical analysis of ChatGPT and OpenAI tool usage."
+  },
+  {
+    id: "ctr_simon-willison_claude",
+    creatorId: "creator_simon-willison",
+    toolSlug: "claude",
+    relationshipType: "teaches",
+    confidence: 94,
+    status: "accepted",
+    sourceType: "manual",
+    sourceUrl: "https://simonwillison.net/",
+    evidenceText: "Creator regularly publishes technical analysis of Claude and Anthropic tool usage."
+  },
+  {
+    id: "ctr_andrej-karpathy_cursor",
+    creatorId: "creator_andrej-karpathy",
+    toolSlug: "cursor",
+    relationshipType: "mentions",
+    confidence: 90,
+    status: "accepted",
+    sourceType: "manual",
+    sourceUrl: "https://x.com/karpathy",
+    evidenceText: "AI coding educator publicly associated with coding-agent workflows and Cursor discussion."
+  },
+  {
+    id: "ctr_greg-kamradt_cursor",
+    creatorId: "creator_greg-kamradt",
+    toolSlug: "cursor",
+    relationshipType: "teaches",
+    confidence: 91,
+    status: "accepted",
+    sourceType: "manual",
+    sourceUrl: "https://x.com/GregKamradt",
+    evidenceText: "AI workflow educator publicly demonstrates coding-agent and app-building workflows."
+  },
+  {
+    id: "ctr_nick-st-pierre_midjourney",
+    creatorId: "creator_nick-st-pierre",
+    toolSlug: "midjourney",
+    relationshipType: "teaches",
+    confidence: 97,
+    status: "accepted",
+    sourceType: "manual",
+    sourceUrl: "https://x.com/nickfloats",
+    evidenceText: "AI image creator publicly known for Midjourney workflows and visual prompting."
+  },
+  {
+    id: "ctr_linusekenstam_midjourney",
+    creatorId: "creator_linus-ekenstam",
+    toolSlug: "midjourney",
+    relationshipType: "uses",
+    confidence: 93,
+    status: "accepted",
+    sourceType: "manual",
+    sourceUrl: "https://x.com/linusekenstam",
+    evidenceText: "AI design creator publicly associated with generative image and design workflows."
+  },
+  {
+    id: "ctr_min-choi_kling",
+    creatorId: "creator_min-choi",
+    toolSlug: "kling",
+    relationshipType: "uses",
+    confidence: 92,
+    status: "accepted",
+    sourceType: "manual",
+    sourceUrl: "https://x.com/minchoi",
+    evidenceText: "AI video creator publicly associated with emerging AI video tool demos."
+  },
+  {
+    id: "ctr_theoretically-media_runway",
+    creatorId: "creator_theoretically-media",
+    toolSlug: "runway",
+    relationshipType: "teaches",
+    confidence: 92,
+    status: "accepted",
+    sourceType: "manual",
+    sourceUrl: "https://www.youtube.com/@TheoreticallyMedia",
+    evidenceText: "AI video channel publicly associated with Runway and generative video workflows."
+  },
+  {
+    id: "ctr_theoretically-media_pika",
+    creatorId: "creator_theoretically-media",
+    toolSlug: "pika",
+    relationshipType: "teaches",
+    confidence: 90,
+    status: "accepted",
+    sourceType: "manual",
+    sourceUrl: "https://www.youtube.com/@TheoreticallyMedia",
+    evidenceText: "AI video channel publicly associated with Pika and generative video workflows."
+  },
+  {
+    id: "ctr_dan-shipper_chatgpt",
+    creatorId: "creator_dan-shipper",
+    toolSlug: "chatgpt",
+    relationshipType: "mentions",
+    confidence: 92,
+    status: "accepted",
+    sourceType: "manual",
+    sourceUrl: "https://www.every.to/",
+    evidenceText: "AI productivity writer publicly discusses ChatGPT in knowledge-work workflows."
+  },
+  {
+    id: "ctr_ethan-mollick_chatgpt",
+    creatorId: "creator_ethan-mollick",
+    toolSlug: "chatgpt",
+    relationshipType: "teaches",
+    confidence: 95,
+    status: "accepted",
+    sourceType: "manual",
+    sourceUrl: "https://www.oneusefulthing.org/",
+    evidenceText: "AI productivity researcher publicly teaches and analyzes ChatGPT usage."
+  },
+  {
+    id: "ctr_ethan-mollick_claude",
+    creatorId: "creator_ethan-mollick",
+    toolSlug: "claude",
+    relationshipType: "teaches",
+    confidence: 93,
+    status: "accepted",
+    sourceType: "manual",
+    sourceUrl: "https://www.oneusefulthing.org/",
+    evidenceText: "AI productivity researcher publicly teaches and analyzes Claude usage."
+  },
+  {
+    id: "ctr_theo-browne_cursor",
+    creatorId: "creator_theo-browne",
+    toolSlug: "cursor",
+    relationshipType: "uses",
+    confidence: 93,
+    status: "accepted",
+    sourceType: "manual",
+    sourceUrl: "https://x.com/t3dotgg",
+    evidenceText: "Developer creator publicly associated with Cursor-centered AI coding workflows."
+  },
+  {
+    id: "ctr_pietro-schirano_v0",
+    creatorId: "creator_pietro-schirano",
+    toolSlug: "v0",
+    relationshipType: "uses",
+    confidence: 92,
+    status: "accepted",
+    sourceType: "manual",
+    sourceUrl: "https://x.com/skirano",
+    evidenceText: "AI product builder publicly associated with v0-powered interface prototyping."
+  },
+  {
+    id: "ctr_min-choi_runway",
+    creatorId: "creator_min-choi",
+    toolSlug: "runway",
+    relationshipType: "uses",
+    confidence: 91,
+    status: "accepted",
+    sourceType: "manual",
+    sourceUrl: "https://x.com/minchoi",
+    evidenceText: "AI video creator publicly associated with Runway and generative video workflows."
+  },
+  {
+    id: "ctr_greg-kamradt_claude",
+    creatorId: "creator_greg-kamradt",
+    toolSlug: "claude",
+    relationshipType: "teaches",
+    confidence: 92,
+    status: "accepted",
+    sourceType: "manual",
+    sourceUrl: "https://x.com/GregKamradt",
+    evidenceText: "AI workflow educator publicly teaches Claude-oriented agent and app-building workflows."
+  },
+  {
+    id: "ctr_theo-browne_v0",
+    creatorId: "creator_theo-browne",
+    toolSlug: "v0",
+    relationshipType: "teaches",
+    confidence: 91,
+    status: "accepted",
+    sourceType: "manual",
+    sourceUrl: "https://x.com/t3dotgg",
+    evidenceText: "Developer creator publicly explains v0 and AI app-building workflows."
+  },
+  {
+    id: "ctr_matt-wolfe_chatgpt",
+    creatorId: "creator_matt-wolfe",
+    toolSlug: "chatgpt",
+    relationshipType: "teaches",
+    confidence: 92,
+    status: "accepted",
+    sourceType: "manual",
+    sourceUrl: "https://x.com/mreflow",
+    evidenceText: "AI tools educator publicly teaches ChatGPT capabilities and practical workflows."
+  },
+  {
+    id: "ctr_wes-roth_notebooklm",
+    creatorId: "creator_wes-roth",
+    toolSlug: "notebooklm",
+    relationshipType: "teaches",
+    confidence: 91,
+    status: "accepted",
+    sourceType: "manual",
+    sourceUrl: "https://x.com/WesRothMoney",
+    evidenceText: "AI news and tutorial creator publicly explains NotebookLM capabilities and workflows."
+  },
+  {
+    id: "ctr_dan-shipper_claude",
+    creatorId: "creator_dan-shipper",
+    toolSlug: "claude",
+    relationshipType: "mentions",
+    confidence: 90,
+    status: "accepted",
+    sourceType: "manual",
+    sourceUrl: "https://www.every.to/",
+    evidenceText: "AI productivity writer publicly discusses Claude in knowledge-work contexts."
+  },
+  {
+    id: "ctr_andrej-karpathy_chatgpt",
+    creatorId: "creator_andrej-karpathy",
+    toolSlug: "chatgpt",
+    relationshipType: "mentions",
+    confidence: 91,
+    status: "accepted",
+    sourceType: "manual",
+    sourceUrl: "https://x.com/karpathy",
+    evidenceText: "AI educator publicly discusses ChatGPT and language-model product behavior."
+  },
+  {
+    id: "ctr_wes-roth_claude",
+    creatorId: "creator_wes-roth",
+    toolSlug: "claude",
+    relationshipType: "mentions",
+    confidence: 90,
+    status: "accepted",
+    sourceType: "manual",
+    sourceUrl: "https://x.com/WesRothMoney",
+    evidenceText: "AI news creator publicly discusses Claude in model and product coverage."
+  }
+];
+
+function isAdoptionRelationship(relationship: CreatorToolRelationship) {
+  return relationship.relationshipType === "uses" || relationship.relationshipType === "teaches";
+}
+
+function acceptedCreatorToolSlugs(creatorId: string) {
+  return creatorToolRelationships
+    .filter((relationship) => relationship.status === "accepted" && relationship.creatorId === creatorId && isAdoptionRelationship(relationship))
+    .map((relationship) => relationship.toolSlug)
+    .filter((toolSlug) => tools.some((tool) => tool.slug === toolSlug));
+}
+
+export const creatorWorkflowRelationships: CreatorWorkflowRelationship[] = creatorToolRelationships
+  .filter((relationship) => relationship.status === "accepted")
+  .flatMap((relationship) => {
+    const creatorToolSlugs = acceptedCreatorToolSlugs(relationship.creatorId);
+    return workflows
+      .map((workflow) => {
+        const supportingToolSlugs = workflow.toolSlugs.filter((toolSlug) => creatorToolSlugs.includes(toolSlug));
+        return { workflow, supportingToolSlugs };
+      })
+      .filter(({ workflow, supportingToolSlugs }) => supportingToolSlugs.length >= Math.min(2, workflow.toolSlugs.length))
+      .map(({ workflow, supportingToolSlugs }) => ({
+        id: `cwr_${relationship.creatorId.replace(/^creator_/, "")}_${workflow.slug}`,
+        creatorId: relationship.creatorId,
+        workflowSlug: workflow.slug,
+        relationshipType: "inferred_from_tools" as const,
+        confidence: supportingToolSlugs.length >= 3 ? 88 : 82,
+        status: "accepted" as const,
+        sourceType: "derived" as const,
+        evidenceText: "Derived from accepted creator-tool relationships overlapping this workflow stack.",
+        supportingToolSlugs
+      }));
+  })
+  .filter((relationship, index, relationships) => relationships.findIndex((item) => item.id === relationship.id) === index);
+
+function acceptedCreatorWorkflowSlugs(creatorId: string) {
+  return creatorWorkflowRelationships
+    .filter((relationship) => relationship.status === "accepted" && relationship.creatorId === creatorId)
+    .map((relationship) => relationship.workflowSlug);
+}
+
 export const importedCreators: CreatorProfile[] = (importedPdfCreators as ImportedCreator[]).map((creator) => {
-  const toolSlugs = creator.toolSlugs.filter((slug) => tools.some((tool) => tool.slug === slug));
+  const toolSlugs = acceptedCreatorToolSlugs(creator.id);
+  const workflowSlugs = acceptedCreatorWorkflowSlugs(creator.id);
   const rawImportedTags = [
     creator.creatorCategory,
     ...creator.niches,
@@ -653,7 +1020,7 @@ export const importedCreators: CreatorProfile[] = (importedPdfCreators as Import
     tagNotes: creator.tagNotes,
     rawImportedTags,
     tagInferenceMethod: publicSpecializationTags.length ? "normalized-imported-creator-tags" : undefined,
-    workflowSlugs: creator.workflowSlugs,
+    workflowSlugs,
     toolSlugs,
     recentMentions: creator.recentMentions,
     creatorScore: creator.creatorScore,

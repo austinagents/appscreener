@@ -24,10 +24,10 @@ import { MovementBadge } from "@/components/movement-badge";
 import { SaveButton } from "@/components/save-button";
 import { ToolLogo } from "@/components/tool-logo";
 import { WorkflowStack } from "@/components/workflow-stack";
-import { creators, creatorSignals, edgesForTool, getTool, tools, toolsForWorkflow, workflows } from "@/lib/data";
+import { creators, creatorSignals, creatorToolRelationships, edgesForTool, getTool, tools, toolsForWorkflow, workflows } from "@/lib/data";
 import { ecosystemTagSlug } from "@/lib/ecosystem-tags";
 import { displayCategory } from "@/lib/format";
-import type { CreatorProfile, Tool, Workflow as WorkflowType } from "@/lib/types";
+import type { CreatorProfile, CreatorToolRelationship, Tool, Workflow as WorkflowType } from "@/lib/types";
 
 const navSections = [
   {
@@ -94,7 +94,7 @@ export default function ToolPage({ params }: { params: { slug: string } }) {
   const tool = getTool(params.slug);
   if (!tool) notFound();
 
-  const connectedCreators = creatorsForTool(tool);
+  const connectedCreators = creatorRelationshipsForTool(tool);
   const usedIn = workflows.filter((workflow) => workflow.toolSlugs.includes(tool.slug));
   const related = relatedToolsFor(tool);
   const edgeTools = edgesForTool(tool.slug)
@@ -146,13 +146,13 @@ export default function ToolPage({ params }: { params: { slug: string } }) {
               </div>
             </Panel>
 
-            <Panel title={`Who is using ${tool.name}?`} subtitle="Top creators and teams using this tool">
+            <Panel title={`Creators connected to ${tool.name}`} subtitle="Accepted uses and teaches relationships">
               {connectedCreators.length ? (
                 <div className="toolCreatorShelf">
-                  {connectedCreators.map((creator) => <CreatorCard creator={creator} key={creator.id} />)}
+                  {connectedCreators.map(({ creator, relationshipType }) => <CreatorCard creator={creator} relationshipType={relationshipType} key={creator.id} />)}
                 </div>
               ) : (
-                <p className="toolEmptyState">No accepted creator-tool relationships are public yet. AppScreener is keeping this blank until attribution is verified.</p>
+                <p className="toolEmptyState">No accepted uses or teaches relationships are public yet. Mentions stay separate from verified adoption.</p>
               )}
             </Panel>
 
@@ -276,16 +276,17 @@ function ReasonCard({ title, text }: { title: string; text: string }) {
   return <span><strong>{title}</strong><small>{text}</small></span>;
 }
 
-function CreatorCard({ creator }: { creator: CreatorProfile }) {
+function CreatorCard({ creator, relationshipType }: { creator: CreatorProfile; relationshipType: CreatorAdoptionRelationshipType }) {
   const tags = [creator.primarySpecialization, ...creator.specializationTags].filter(Boolean).slice(0, 1);
   return (
     <Link href={`/creators/${creator.id}`} className="toolIntelCreatorCard">
       <CreatorAvatar name={creator.name} src={creator.avatarUrl} size={54} />
       <strong>{creator.name}</strong>
+      <small className="toolRelationshipBadge">{relationshipBadgeLabel(relationshipType)}</small>
       <small>{creator.handle}</small>
       <em>{tags.map((tag) => tag ? tag.replace(/^AI\s+/, "").replace(/ AI$/, "") : "").join(" · ") || creator.creatorCategory}</em>
       {creator.followers ? <small>{compactNumber(creator.followers)} followers</small> : null}
-      <span>Used in {creator.workflowSlugs.length} workflows</span>
+      <span>{creator.workflowSlugs.length ? `Linked to ${creator.workflowSlugs.length} verified workflows` : "Workflow links pending"}</span>
     </Link>
   );
 }
@@ -298,11 +299,10 @@ function WorkflowCard({ workflow }: { workflow: WorkflowType }) {
       <strong>{workflow.name}</strong>
       <WorkflowStack toolSlugs={workflow.toolSlugs} />
       <small>{stackTools.map((tool) => tool.name).join(" · ")}</small>
-      <em>{workflowCreators.length ? `Used by ${compactNumber(workflow.creatorUsage)} creators` : "Creator attribution pending"}</em>
+      <em>{workflowCreators.length ? `${workflowCreators.length} verified creator ${workflowCreators.length === 1 ? "relationship" : "relationships"}` : "Creator attribution pending"}</em>
       {workflowCreators.length ? (
         <span className="workflowCreatorStrip">
           {workflowCreators.slice(0, 5).map((creator) => <CreatorAvatar name={creator.name} src={creator.avatarUrl} size={18} key={creator.id} />)}
-          {workflow.creatorUsage > workflowCreators.length ? <b>+{workflow.creatorUsage - workflowCreators.length}</b> : null}
         </span>
       ) : (
         <span className="workflowCreatorStrip empty">No public creator links yet</span>
@@ -335,8 +335,25 @@ function TagRail({ tool, tags }: { tool: Tool; tags: string[] }) {
   );
 }
 
-function creatorsForTool(tool: Tool) {
-  return creators.filter((creator) => creator.toolSlugs.includes(tool.slug)).slice(0, 5);
+type CreatorAdoptionRelationshipType = Extract<CreatorToolRelationship["relationshipType"], "uses" | "teaches">;
+
+function isCreatorAdoptionRelationship(relationship: CreatorToolRelationship): relationship is CreatorToolRelationship & { relationshipType: CreatorAdoptionRelationshipType } {
+  return relationship.relationshipType === "uses" || relationship.relationshipType === "teaches";
+}
+
+function creatorRelationshipsForTool(tool: Tool) {
+  return creatorToolRelationships
+    .filter((relationship) => relationship.status === "accepted" && relationship.toolSlug === tool.slug && isCreatorAdoptionRelationship(relationship))
+    .map((relationship) => {
+      const creator = creators.find((item) => item.id === relationship.creatorId);
+      return creator ? { creator, relationshipType: relationship.relationshipType } : null;
+    })
+    .filter((item): item is { creator: CreatorProfile; relationshipType: CreatorAdoptionRelationshipType } => Boolean(item))
+    .slice(0, 5);
+}
+
+function relationshipBadgeLabel(type: CreatorAdoptionRelationshipType) {
+  return type === "uses" ? "Uses" : "Teaches";
 }
 
 function creatorsForWorkflow(workflowSlug: string) {
