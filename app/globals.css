@@ -1369,30 +1369,10 @@ p { color: var(--muted); line-height: 1.5; }
   gap: 14px;
 }
 
-.heatmapExplorerHeader {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(320px, 0.72fr);
-  gap: 14px;
-  align-items: end;
-  padding: 16px;
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  background:
-    radial-gradient(circle at 18% 0%, rgba(70, 217, 255, 0.08), transparent 32%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.026), transparent),
-    var(--bg-elevated);
-  box-shadow: var(--inner-highlight);
-}
-
-.heatmapExplorerHeader h1 {
-  margin: 2px 0 4px;
-  font-size: 30px;
-  line-height: 1;
-}
-
-.heatmapExplorerHeader p {
-  max-width: 640px;
-  margin: 0;
+.compactControlRow,
+.heatmapControlRow {
+  display: flex;
+  justify-content: flex-end;
 }
 
 .heatmapControls {
@@ -3612,10 +3592,6 @@ a:hover .toolLogo {
   border-color: var(--border-strong);
 }
 
-.searchHero h1 {
-  font-size: clamp(30px, 4vw, 48px);
-}
-
 .searchSurface,
 .claimForm,
 .dashboardNav,
@@ -3903,7 +3879,8 @@ a:hover .toolLogo {
 }
 
 .claimForm input,
-.claimForm textarea {
+.claimForm textarea,
+.claimForm select {
   width: 100%;
   min-height: 38px;
   padding: 9px 10px;
@@ -3912,6 +3889,172 @@ a:hover .toolLogo {
   color: var(--text);
   outline: 0;
   text-transform: none;
+}
+
+.fieldHint {
+  color: var(--text-muted);
+  font-size: 11px;
+  line-height: 1.35;
+  text-transform: none;
+}
+
+.onboardingSecondaryPath,
+.onboardingNote {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.onboardingSecondaryPath a {
+  color: var(--green);
+}
+
+.onboardingFormHeader {
+  align-items: start;
+}
+
+.onboardingFormHeader .onboardingSecondaryPath {
+  justify-self: end;
+  text-align: right;
+}
+
+.graphSelector {
+  position: relative;
+  display: grid;
+  gap: 8px;
+}
+
+.graphSelector > div:first-child {
+  display: grid;
+  gap: 4px;
+}
+
+.graphSelector strong {
+  color: var(--muted);
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.graphSelectorLabel {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.graphSelectorLabel span {
+  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.graphSelector input {
+  width: 100%;
+  min-height: 38px;
+  padding: 9px 10px;
+  border: 1px solid var(--line);
+  background: #071015;
+  color: var(--text);
+  outline: 0;
+}
+
+.graphSuggestionRow {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.graphSelectorDropdown {
+  position: absolute;
+  top: 78px;
+  right: 0;
+  left: 0;
+  z-index: 8;
+  display: grid;
+  gap: 4px;
+  max-height: 260px;
+  padding: 6px;
+  overflow: auto;
+  border: 1px solid var(--border-subtle);
+  background: #071015;
+  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.45);
+}
+
+.graphSelectorDropdownHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 2px 2px 6px;
+  color: var(--text-muted);
+  font-size: 10px;
+  text-transform: uppercase;
+}
+
+.graphSuggestionRow button,
+.graphSelectorDropdown button {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-start;
+  min-width: 0;
+  min-height: 38px;
+  padding: 6px 9px;
+  border: 1px solid var(--line);
+  background: #071015;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 11px;
+  text-align: left;
+}
+
+.graphSelectorDropdown button {
+  width: 100%;
+}
+
+.graphSelectorDropdown .graphSelectorDropdownHeader button {
+  width: auto;
+  min-height: 24px;
+  padding: 0 8px;
+}
+
+.graphSuggestionRow button > span,
+.graphSelectorDropdown button > span {
+  min-width: 0;
+  overflow: hidden;
+  color: inherit;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.graphSuggestionRow .toolLogo,
+.graphSelectorDropdown .toolLogo {
+  flex: 0 0 auto;
+}
+
+.graphSuggestionRow .toolStack,
+.graphSelectorDropdown .toolStack {
+  flex: 0 0 auto;
+  min-width: 54px;
+}
+
+.graphSuggestionRow .toolStack img,
+.graphSelectorDropdown .toolStack img {
+  width: 20px;
+  height: 20px;
+}
+
+.graphSuggestionRow button.active,
+.graphSelectorDropdown button.active {
+  border-color: var(--green);
+  background: rgba(34, 229, 139, 0.08);
+  color: var(--green);
+}
+
+.graphSuggestionRow button:disabled,
+.graphSelectorDropdown button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
 }
 
 .claimForm textarea {
@@ -3929,6 +4072,10 @@ a:hover .toolLogo {
 
 .dashboardGrid {
   grid-template-columns: 240px minmax(0, 1fr);
+}
+
+.ownershipDashboardFull {
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .dashboardNav {
@@ -4017,14 +4164,27 @@ a:hover .toolLogo {
   gap: 8px;
 }
 
+.ownershipProfileStack {
+  display: grid;
+  gap: 10px;
+}
+
+.ownershipProfileAsset {
+  display: flex;
+  align-items: center;
+}
+
 .ownershipFormGrid {
+  --dashboard-profile-input-height: 38px;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
   gap: 10px;
 }
 
 .ownershipFormGrid label {
   display: grid;
+  grid-template-rows: 13px var(--dashboard-profile-input-height);
   gap: 6px;
   color: var(--muted);
   font-size: 11px;
@@ -4037,12 +4197,27 @@ a:hover .toolLogo {
 
 .ownershipFormGrid input {
   width: 100%;
-  min-height: 38px;
+  height: var(--dashboard-profile-input-height);
+  min-height: var(--dashboard-profile-input-height);
+  box-sizing: border-box;
   padding: 9px 10px;
   border: 1px solid var(--line);
   background: #071015;
   color: var(--text);
   outline: 0;
+}
+
+.ownershipFormActions {
+  display: flex;
+  padding-top: calc(13px + 6px);
+}
+
+.ownershipFormActions {
+  align-items: flex-end;
+}
+
+.ownershipFormActions .primaryButton {
+  width: 100%;
 }
 
 .ownershipRows {
@@ -4177,7 +4352,6 @@ a:hover .toolLogo {
 
   .toolProfileTop,
   .toolProfileLayout,
-  .heatmapExplorerHeader,
   .heatmapExplorerLayout {
     grid-template-columns: 1fr;
   }
@@ -4309,10 +4483,6 @@ a:hover .toolLogo {
   .toolCreatorGrid,
   .toolWorkflowGrid {
     grid-template-columns: 1fr;
-  }
-
-  .heatmapExplorerHeader {
-    padding: 14px;
   }
 
   .ecosystemCluster {

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import Script from "next/script";
 import type { ReactNode } from "react";
 import {
   Activity,
@@ -25,10 +25,11 @@ import { MovementBadge } from "@/components/movement-badge";
 import { SaveButton } from "@/components/save-button";
 import { ToolLogo } from "@/components/tool-logo";
 import { WorkflowStack } from "@/components/workflow-stack";
-import { creators, creatorSignals, creatorToolRelationships, edgesForTool, getTool, productClaimStatus, tools, toolsForWorkflow, workflows } from "@/lib/data";
+import { creators, creatorSignals, creatorToolRelationships, edgesForTool, getTool, microWorkflows, productClaimStatus, tools, toolsForMicroWorkflow, toolsForWorkflow, workflows } from "@/lib/data";
 import { ecosystemTagSlug } from "@/lib/ecosystem-tags";
 import { betaEventBootstrapScript } from "@/lib/events";
 import { displayCategory } from "@/lib/format";
+import { LOCAL_PRODUCTS_KEY } from "@/lib/local-graph";
 import type { CreatorProfile, CreatorToolRelationship, Tool, Workflow as WorkflowType } from "@/lib/types";
 
 const navSections = [
@@ -94,7 +95,7 @@ export function generateStaticParams() {
 
 export default function ToolPage({ params }: { params: { slug: string } }) {
   const tool = getTool(params.slug);
-  if (!tool) notFound();
+  if (!tool) return <LocalProductProfile slug={params.slug} />;
 
   const connectedCreators = creatorRelationshipsForTool(tool);
   const usedIn = workflows.filter((workflow) => workflow.toolSlugs.includes(tool.slug));
@@ -131,10 +132,10 @@ export default function ToolPage({ params }: { params: { slug: string } }) {
                 <p className="toolHeroCategory">{displayCategory(tool.category)}</p>
                 <p className="toolHeroDescription">{tool.description}</p>
                 <TagRail tool={tool} tags={relatedTags.slice(0, 5)} />
-                <p className="ownershipUnlockCopy">Claiming unlocks product info management, workflow association requests, creator adjacency, and topic/use-case positioning after review.</p>
+                <p className="ownershipUnlockCopy">Claiming unlocks product info management, workflow associations, creator adjacency, and topic/use-case positioning.</p>
                 <div className="toolHeroActions">
                   <a className="iconTextButton primaryWebsiteButton" href={tool.websiteUrl} target="_blank" rel="noreferrer">Visit website <ExternalLink size={14} /></a>
-                  <a className="iconTextButton" href={`/claim/product/${tool.slug}`} data-beta-product-claim-cta="true">{claimStatus === "pending" ? "View Claim" : "Claim Product"}</a>
+                  <a className="iconTextButton" href={`/claim/product/${tool.slug}`} data-beta-product-claim-cta="true">{claimStatus === "claimed" ? "Manage Product" : "Claim Product"}</a>
                   <ClaimStatusBadge status={claimStatus} />
                   <SaveButton kind="tools" id={tool.slug} label="Add to watchlist" />
                 </div>
@@ -237,6 +238,132 @@ export default function ToolPage({ params }: { params: { slug: string } }) {
   );
 }
 
+function LocalProductProfile({ slug }: { slug: string }) {
+  const workflowLookup = workflows.map((workflow) => ({
+    slug: workflow.slug,
+    name: workflow.name,
+    outcome: workflow.outcome,
+    tools: toolsForWorkflow(workflow).map((tool) => tool.name)
+  }));
+  const microWorkflowLookup = microWorkflowLookupForClient();
+
+  return (
+    <div className="toolIntelShell">
+      <ToolSidebar />
+      <div className="toolIntelWorkspace">
+        <section className="toolIntelHeroGrid">
+          <article className="toolIntelHero">
+            <Link href="/search" className="toolBackLink">← Back to discover</Link>
+            <div className="toolHeroBody">
+              <img className="toolLogo official" id="localProductLogo" alt="" width={112} height={112} style={{ display: "none" }} />
+              <div>
+                <h1 id="localProductName">Local product profile</h1>
+                <p className="toolHeroCategory" id="localProductCategory">Created product</p>
+                <p className="toolHeroDescription" id="localProductDescription">Looking for this product in your local AppScreener graph.</p>
+                <p className="ownershipUnlockCopy" id="localProductTagline" />
+                <div className="toolHeroActions">
+                  <a className="iconTextButton primaryWebsiteButton" id="localProductWebsite" href="/dashboard/product">Visit website <ExternalLink size={14} /></a>
+                  <ClaimStatusBadge status="claimed" />
+                </div>
+              </div>
+            </div>
+          </article>
+        </section>
+        <section className="toolIntelContentGrid">
+          <main className="toolIntelMain">
+            <Panel title="Used In Workflows" subtitle="Workflow contexts connected by this product owner">
+              <div className="toolWorkflowShelf" id="localProductWorkflows" />
+            </Panel>
+            <Panel title="Associated Micro Workflows" subtitle="Specific tasks this product helps complete">
+              <div className="toolWorkflowShelf" id="localProductMicroWorkflows" />
+            </Panel>
+          </main>
+          <aside className="toolIntelRail">
+            <Panel title="About this product">
+              <div className="toolAboutTable">
+                <InfoRow label="Website" value={<span id="localProductWebsiteText">Add website</span>} />
+                <InfoRow label="Category" value={<span id="localProductCategoryText">Created product</span>} />
+                <InfoRow label="Social" value={<span id="localProductSocial">Add social profile</span>} />
+              </div>
+            </Panel>
+          </aside>
+        </section>
+      </div>
+      <Script id={`local-product-${slug}`} strategy="afterInteractive" dangerouslySetInnerHTML={{ __html: localProductScript(slug, workflowLookup, microWorkflowLookup) }} />
+    </div>
+  );
+}
+
+function microWorkflowLookupForClient() {
+  return microWorkflows.map((microWorkflow) => ({
+    slug: microWorkflow.slug,
+    name: microWorkflow.name,
+    outcome: microWorkflow.outcome,
+    tools: toolsForMicroWorkflow(microWorkflow.slug).map((tool) => tool.name)
+  }));
+}
+
+function localProductScript(slug: string, workflowLookup: Array<{ slug: string; name: string; outcome: string; tools: string[] }>, microWorkflowLookup: Array<{ slug: string; name: string; outcome: string; tools: string[] }>) {
+  return `
+    (function() {
+      var slug = ${JSON.stringify(slug)};
+      var workflows = ${JSON.stringify(workflowLookup)};
+      var microWorkflows = ${JSON.stringify(microWorkflowLookup)};
+      var records = [];
+      try { records = JSON.parse(localStorage.getItem(${JSON.stringify(LOCAL_PRODUCTS_KEY)}) || "[]"); } catch (error) { records = []; }
+      var product = Array.isArray(records) ? records.find(function(item) { return item && item.slug === slug; }) : null;
+      function text(id, value) { var node = document.getElementById(id); if (node) node.textContent = value || ""; }
+      function safeUrl(value) { return /^https?:\\/\\//i.test(value || "") ? value : ""; }
+      function renderRows(id, slugs, lookup, emptyText) {
+        var container = document.getElementById(id);
+        if (!container) return;
+        container.textContent = "";
+        var matches = (slugs || []).map(function(item) { return lookup.find(function(entry) { return entry.slug === item; }); }).filter(Boolean);
+        if (!matches.length) {
+          var empty = document.createElement("p");
+          empty.className = "toolEmptyState";
+          empty.textContent = emptyText;
+          container.appendChild(empty);
+          return;
+        }
+        matches.forEach(function(item) {
+          var row = document.createElement("article");
+          row.className = "toolWorkflowCard";
+          var title = document.createElement("strong");
+          title.textContent = item.name;
+          var context = document.createElement("p");
+          context.textContent = item.tools && item.tools.length ? item.tools.join(" -> ") : item.outcome;
+          row.appendChild(title);
+          row.appendChild(context);
+          container.appendChild(row);
+        });
+      }
+      if (!product) {
+        text("localProductName", "Product not found");
+        text("localProductDescription", "No local product profile exists for this slug in this browser.");
+        return;
+      }
+      var logo = document.getElementById("localProductLogo");
+      if (logo && product.logoUrl) {
+        logo.src = product.logoUrl;
+        logo.style.display = "";
+      }
+      text("localProductName", product.name);
+      text("localProductCategory", (product.category || "").replace(/^AI\\s+/, "") || "Created product");
+      text("localProductCategoryText", (product.category || "").replace(/^AI\\s+/, "") || "Created product");
+      text("localProductDescription", product.description);
+      text("localProductTagline", product.tagline);
+      text("localProductWebsiteText", product.website);
+      text("localProductSocial", product.socialUrl);
+      var website = safeUrl(product.website);
+      var websiteLink = document.getElementById("localProductWebsite");
+      if (websiteLink && website) websiteLink.href = website;
+      renderRows("localProductWorkflows", product.workflowSlugs, workflows, "Connect workflows from the product dashboard to improve discovery.");
+      renderRows("localProductMicroWorkflows", product.microWorkflowSlugs, microWorkflows, "Connect micro workflows from the product dashboard to show specific tasks.");
+    })();
+  `;
+}
+
 function productProfileEventScript(toolSlug: string) {
   return `
     ${betaEventBootstrapScript()}
@@ -315,7 +442,7 @@ function CreatorCard({ creator, relationshipType }: { creator: CreatorProfile; r
       <small>{creator.handle}</small>
       <em>{tags.map((tag) => tag ? tag.replace(/^AI\s+/, "").replace(/ AI$/, "") : "").join(" · ") || creator.creatorCategory}</em>
       {creator.followers ? <small>{compactNumber(creator.followers)} followers</small> : null}
-      <span>{creator.workflowSlugs.length ? `Linked to ${creator.workflowSlugs.length} verified workflows` : "Workflow links pending"}</span>
+      <span>{creator.workflowSlugs.length ? `Linked to ${creator.workflowSlugs.length} workflows` : "Add workflow links"}</span>
     </Link>
   );
 }
@@ -328,7 +455,7 @@ function WorkflowCard({ workflow }: { workflow: WorkflowType }) {
       <strong>{workflow.name}</strong>
       <WorkflowStack toolSlugs={workflow.toolSlugs} />
       <small>{stackTools.map((tool) => tool.name).join(" · ")}</small>
-      <em>{workflowCreators.length ? `${workflowCreators.length} verified creator ${workflowCreators.length === 1 ? "relationship" : "relationships"}` : "Creator attribution pending"}</em>
+      <em>{workflowCreators.length ? `${workflowCreators.length} creator ${workflowCreators.length === 1 ? "relationship" : "relationships"}` : "Add creator relationships"}</em>
       {workflowCreators.length ? (
         <span className="workflowCreatorStrip">
           {workflowCreators.slice(0, 5).map((creator) => <CreatorAvatar name={creator.name} src={creator.avatarUrl} size={18} key={creator.id} />)}
@@ -395,14 +522,14 @@ function reasonsForTool(tool: Tool, workflowCount: number, relatedCount: number,
     hasPublicCreatorEvidence
       ? { title: "Verified creator context indexed", text: `${creatorCount + mentionCount} public creator ${creatorCount + mentionCount === 1 ? "relationship is" : "relationships are"} attached to this profile.` }
       : tool.creatorMentions
-        ? { title: "Creator attention under review", text: "Seeded attention metrics show creator-side activity, but public attribution is still being verified." }
-        : { title: "Creator relationships pending", text: "Verified creator usage is being mapped before AppScreener shows attribution." },
+        ? { title: "Creator attention", text: "Seeded attention metrics show creator-side activity and room to connect more public attribution." }
+        : { title: "Creator relationships", text: "Connect creator usage to improve product discovery." },
     workflowCount
       ? { title: `Active in ${displayCategory(tool.category)} workflows`, text: `Appears in ${workflowCount} tracked workflow ${workflowCount === 1 ? "stack" : "stacks"} on AppScreener.` }
       : { title: "Workflow relationships forming", text: "No verified workflow stack currently includes this tool." },
     relatedCount
       ? { title: "Often paired with adjacent tools", text: "Relationship mapping shows nearby products in similar workflow and category lanes." }
-      : { title: "Adjacent tools under review", text: "Relationship mapping is still being refined for this product." },
+      : { title: "Adjacent tools", text: "Connect adjacent products to strengthen graph traversal." },
     { title: "Growing in ecosystem discovery", text: `${tool.name} is part of the current organic discovery universe for ${displayCategory(tool.category)}.` }
   ];
 }

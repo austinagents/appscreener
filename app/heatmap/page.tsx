@@ -83,12 +83,7 @@ export default function HeatmapPage() {
 
   return (
     <div className="heatmapExplorerPage">
-      <section className="heatmapExplorerHeader">
-        <div>
-          <p className="eyebrow">Ecosystem exploration</p>
-          <h1>Attention Heatmap</h1>
-          <p>Track where AI attention is flowing across tools, creators, workflows, and adjacent ecosystems.</p>
-        </div>
+      <section className="heatmapControlRow">
         <div className="heatmapControls" aria-label="Heatmap controls">
           <span>24H</span>
           <span>Organic movers</span>

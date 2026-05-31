@@ -1,11 +1,13 @@
 "use client";
 
 import { BadgeDollarSign, Battery, Megaphone, PackagePlus, Users } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { BoostTier } from "@/lib/types";
 
 export function BoostPanel({ tiers }: { tiers: BoostTier[] }) {
   const [selectedTier, setSelectedTier] = useState<string>("");
+  const router = useRouter();
 
   return (
     <section className="previewPanel boostPanel">
@@ -47,7 +49,7 @@ export function BoostPanel({ tiers }: { tiers: BoostTier[] }) {
             <li>Launch & update</li>
             <li>Performance insights</li>
           </ul>
-          <button type="button">List your product</button>
+          <button type="button" onClick={() => router.push("/onboarding/product")}>List your product</button>
         </div>
         <div className="boostMarketplaceCard">
           <span className="boostKicker"><Users size={14} /> Creators</span>
@@ -58,7 +60,7 @@ export function BoostPanel({ tiers }: { tiers: BoostTier[] }) {
             <li>Revenue & payouts</li>
             <li>Creator insights</li>
           </ul>
-          <button type="button">Match with brands</button>
+          <button type="button" onClick={() => router.push("/onboarding/creator")}>Match with brands</button>
         </div>
       </div>
     </section>

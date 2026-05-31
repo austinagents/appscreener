@@ -1968,11 +1968,20 @@ export const boostTiers: BoostTier[] = [
 ];
 
 export const canonicalAliases = [
+  { alias: "Chat GPT", canonical: "ChatGPT", slug: "chatgpt" },
+  { alias: "chat-gpt", canonical: "ChatGPT", slug: "chatgpt" },
+  { alias: "OpenAI", canonical: "ChatGPT", slug: "chatgpt" },
   { alias: "Claude AI", canonical: "Claude", slug: "claude" },
   { alias: "Anthropic Claude", canonical: "Claude", slug: "claude" },
+  { alias: "Anthropic", canonical: "Claude", slug: "claude" },
   { alias: "OpenAI ChatGPT", canonical: "ChatGPT", slug: "chatgpt" },
   { alias: "Midjourney AI", canonical: "Midjourney", slug: "midjourney" },
-  { alias: "Google NotebookLM", canonical: "NotebookLM", slug: "notebooklm" }
+  { alias: "Notebook LM", canonical: "NotebookLM", slug: "notebooklm" },
+  { alias: "Google NotebookLM", canonical: "NotebookLM", slug: "notebooklm" },
+  { alias: "Google Notebook LM", canonical: "NotebookLM", slug: "notebooklm" },
+  { alias: "v0", canonical: "V0", slug: "v0" },
+  { alias: "v0.dev", canonical: "V0", slug: "v0" },
+  { alias: "Vercel v0", canonical: "V0", slug: "v0" }
 ];
 
 export const ingestionSources = [

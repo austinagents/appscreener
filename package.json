@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit",
     "import:taaft": "node scripts/import-taaft.mjs",
     "import:creators": "node scripts/import-favikon-creators.mjs",
+    "graph:audit": "node scripts/graph-audit.mjs",
     "creators:avatars": "node scripts/fetch-creator-avatars.mjs",
     "logos:fetch": "node scripts/fetch-logos.mjs",
     "logos:validate": "node scripts/validate-logos.mjs"

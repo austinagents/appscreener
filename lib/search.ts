@@ -1,4 +1,4 @@
-import { attentionSubCategories, categories, creatorToolRelationships, creators, edgesForTool, getTool, microWorkflows, microWorkflowsForWorkflow, microWorkflowToolRelationships, tools, toolsForMicroWorkflow, toolsForWorkflow, workflowMicroWorkflowRelationships, workflows } from "./data";
+import { attentionSubCategories, canonicalAliases, categories, creatorToolRelationships, creators, edgesForTool, getTool, microWorkflows, microWorkflowsForWorkflow, microWorkflowToolRelationships, tools, toolsForMicroWorkflow, toolsForWorkflow, workflowMicroWorkflowRelationships, workflows } from "./data";
 import { ecosystemTags } from "./ecosystem-tags";
 import { displayCategory } from "./format";
 
@@ -52,6 +52,10 @@ const creatorGroupIntentTerms = ["creator", "creators", "influencer", "operator"
 const productGroupIntentTerms = ["tool", "tools", "product", "products", "app", "software"];
 const microWorkflowGroupIntentTerms = ["micro workflow", "micro workflows", "step", "task", "action", "implementation"];
 
+function aliasesForSlug(slug: string) {
+  return canonicalAliases.filter((alias) => alias.slug === slug).flatMap((alias) => [alias.alias, alias.canonical]);
+}
+
 function node(label: string, href: string, type: PublicSearchResultType): SearchRelatedNode {
   return { label, href, type };
 }
@@ -104,7 +108,7 @@ function productResults(): SearchResult[] {
         tags,
         graphContext,
         scoreSeed: tool.qualityScore + tool.momentumScore + relatedWorkflows.length * 8 + relatedCreators * 5,
-        aliases: [tool.name, tool.slug],
+        aliases: [...new Set([tool.name, tool.slug, ...aliasesForSlug(tool.slug)])],
         toolSlugs: [tool.slug],
         relatedWorkflows: relatedWorkflows.map((workflow) => node(workflow.name, `/workflows/${workflow.slug}`, "workflow")),
         relatedCreators: relatedCreatorsForTool(tool.slug),

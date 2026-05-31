@@ -5,8 +5,8 @@ export function ClaimStatusBadge({ status }: { status: ClaimStatus }) {
 }
 
 export function claimStatusLabel(status: ClaimStatus) {
-  if (status === "pending") return "Claim Pending";
+  if (status === "pending") return "Ownership available";
   if (status === "claimed") return "Claimed";
-  if (status === "verified") return "Verified";
+  if (status === "verified") return "Claimed";
   return "Unclaimed";
 }

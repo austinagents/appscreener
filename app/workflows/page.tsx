@@ -9,11 +9,7 @@ import { toolsForWorkflow, workflows } from "@/lib/data";
 export default function WorkflowsPage() {
   return (
     <div className="stack">
-      <section className="terminalStatus">
-        <div className="statusIdentity"><strong>Workflow Screener</strong><span>LIVE</span></div>
-        <div className="metric hotMetric"><span>fastest stack</span><strong>Coding</strong></div>
-        <div className="metric"><span>tracked</span><strong>{workflows.length}</strong></div>
-        <div className="metric"><span>tool links</span><strong>{workflows.reduce((sum, workflow) => sum + workflow.toolSlugs.length, 0)}</strong></div>
+      <section className="compactControlRow">
         <TimeframeToggle compact />
       </section>
       <div className="tableWrap">

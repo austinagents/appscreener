@@ -23,15 +23,6 @@ export default function SearchPage({ searchParams }: { searchParams: { q?: strin
   return (
     <div className="stack">
       <script dangerouslySetInnerHTML={{ __html: searchEventScript() }} />
-      <section className="detailHeader searchHero">
-        <div>
-          <p className="eyebrow">Professional Discovery</p>
-          <h1>Search the AppScreener graph</h1>
-          <p>Find exact entities fast, or explore products, creators, workflows, and micro workflows around a topic.</p>
-        </div>
-        <div className="claimStatusBadge verified">{searchState.mode === "exact" ? "Exact Match" : "Exploration Search"}</div>
-      </section>
-
       <section className="searchSurface">
         <form className="searchPageForm" action="/search" data-beta-search-form="true">
           <Search size={18} />

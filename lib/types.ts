@@ -44,6 +44,7 @@ export type ListingStatus = "accepted" | "pending_source" | "pending_review" | "
 export type SizeClass = "Micro" | "Emerging" | "Growth" | "Major" | "Mega";
 export type RankingMode = "Trending" | "Most Used" | "Breaking Out" | "Blue Chips" | "New" | "Fastest Growing" | "Most Discussed" | "Most Saved" | "Boosted";
 export type ClaimStatus = "unclaimed" | "pending" | "claimed" | "verified";
+export type LocalOwnershipStatus = "owner_created" | "claimed";
 
 export type Platform = "Web" | "macOS" | "Windows" | "iOS" | "Android" | "Chrome" | "API" | "Slack" | "Discord" | "Figma" | "VS Code";
 
@@ -347,6 +348,39 @@ export type ProductClaimRequest = {
   note?: string;
   status: "pending_review" | "approved" | "rejected";
   submittedAt: string;
+};
+
+export type LocalProductRecord = {
+  id: string;
+  slug: string;
+  name: string;
+  logoUrl: string;
+  website: string;
+  socialUrl: string;
+  tagline: string;
+  description: string;
+  category: CategoryName;
+  workflowSlugs: string[];
+  microWorkflowSlugs: string[];
+  createdAt: string;
+  updatedAt: string;
+  ownershipStatus: LocalOwnershipStatus;
+};
+
+export type LocalCreatorRecord = {
+  id: string;
+  slug: string;
+  name: string;
+  avatarUrl: string;
+  socialUrl: string;
+  website: string;
+  bio: string;
+  toolSlugs: string[];
+  workflowSlugs: string[];
+  microWorkflowSlugs: string[];
+  createdAt: string;
+  updatedAt: string;
+  ownershipStatus: LocalOwnershipStatus;
 };
 
 export type AttentionFeedItem = {
