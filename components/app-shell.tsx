@@ -5,7 +5,7 @@ import type { ReactNode } from "react";
 import { CommandSearch } from "./command-search";
 
 const tabs = [
-  { href: "/", label: "Discover", icon: Activity },
+  { href: "/search", label: "Discover", icon: Activity },
   { href: "/workflows", label: "Workflows", icon: Workflow },
   { href: "/creators", label: "Creators", icon: Activity },
   { href: "/heatmap", label: "Heatmap", icon: Grid2X2 },

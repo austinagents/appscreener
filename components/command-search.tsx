@@ -2,25 +2,38 @@
 
 import { Search, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { searchIndex } from "@/lib/data";
+import { ToolLogo } from "@/components/tool-logo";
+import { WorkflowStack } from "@/components/workflow-stack";
+import { getTool } from "@/lib/data";
+import { trackBetaEvent } from "@/lib/events";
+import { type PublicSearchResultType, type SearchResult, searchEcosystem } from "@/lib/search";
+
+type CommandSearchResult = SearchResult & { score?: number };
 
 export function CommandSearch() {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [active, setActive] = useState(0);
+  const searchState = useMemo(() => searchEcosystem(query), [query]);
   const results = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return searchIndex.slice(0, 8);
-    return searchIndex
-      .filter((item) => `${item.label} ${item.type} ${item.tags}`.toLowerCase().includes(q))
-      .slice(0, 10);
-  }, [query]);
+    return searchState.results.slice(0, query.trim() ? 10 : 8);
+  }, [query, searchState.results]);
   const grouped = useMemo(() => {
-    return results.reduce<Record<string, typeof results>>((groups, item) => {
-      groups[item.type] = [...(groups[item.type] ?? []), item];
+    const groups = results.reduce<Record<PublicSearchResultType, typeof results>>((groups, item) => {
+      const type = item.type as PublicSearchResultType;
+      groups[type] = [...(groups[type] ?? []), item];
       return groups;
-    }, {});
-  }, [results]);
+    }, {
+      product: [],
+      creator: [],
+      workflow: [],
+      micro_workflow: []
+    });
+
+    return searchState.groupOrder
+      .map((type) => [type, groups[type]] as const)
+      .filter(([, items]) => items.length > 0);
+  }, [results, searchState.groupOrder]);
 
   useEffect(() => {
     function onKey(event: KeyboardEvent) {
@@ -41,7 +54,15 @@ export function CommandSearch() {
         setActive((current) => Math.max(current - 1, 0));
       }
       if (event.key === "Enter" && results[active]) {
-        window.location.href = results[active].slug;
+        trackBetaEvent("search_performed", { query });
+        trackBetaEvent("search_result_clicked", {
+          query,
+          resultType: results[active].type,
+          resultId: results[active].id,
+          resultHref: results[active].href,
+          resultRank: active + 1
+        });
+        window.location.href = results[active].href;
       }
     }
     window.addEventListener("keydown", onKey);
@@ -52,7 +73,7 @@ export function CommandSearch() {
     <>
       <button className="searchBox commandTrigger" onClick={() => setOpen(true)} type="button">
         <Search size={16} />
-        <span>Search tools, workflows, creators, categories</span>
+        <span>Search products, creators, workflows...</span>
         <kbd>/</kbd>
       </button>
       {open && (
@@ -64,15 +85,23 @@ export function CommandSearch() {
               <button onClick={() => setOpen(false)} type="button"><X size={16} /></button>
             </div>
             <div className="commandResults">
-              {results.length ? Object.entries(grouped).map(([type, items]) => (
+              {results.length ? grouped.map(([type, items]) => (
                 <div className="commandGroup" key={type}>
-                  <span>{type}</span>
+                  <span>{typeLabel(type)}</span>
                   {items.map((item) => {
-                    const index = results.findIndex((result) => result.slug === item.slug && result.type === item.type);
+                    const index = results.findIndex((result) => result.href === item.href && result.type === item.type);
                     return (
-                      <a className={index === active ? "active" : ""} href={item.slug} key={`${item.type}-${item.slug}`}>
-                        <strong>{item.label}</strong>
-                        <small>{item.tags}</small>
+                      <a className={index === active ? "active" : ""} href={item.href} key={`${item.type}-${item.href}`} onClick={() => {
+                        trackBetaEvent("search_result_clicked", {
+                          query,
+                          resultType: item.type,
+                          resultId: item.id,
+                          resultHref: item.href,
+                          resultRank: index + 1
+                        });
+                      }}>
+                        <CommandResultTitle item={item} />
+                        <CommandResultContext item={item} />
                       </a>
                     );
                   })}
@@ -84,4 +113,41 @@ export function CommandSearch() {
       )}
     </>
   );
+}
+
+function CommandResultTitle({ item }: { item: CommandSearchResult }) {
+  if (item.type === "product") {
+    const tool = getTool(item.slug);
+
+    if (tool) {
+      return (
+        <strong className="commandResultTitle">
+          <ToolLogo officialSrc={tool.officialLogoUrl} src={tool.logoUrl} faviconSrc={tool.faviconUrl} fallback={tool.iconUrl} alt={tool.name} size={22} />
+          {item.name}
+        </strong>
+      );
+    }
+  }
+
+  return <strong>{item.name}</strong>;
+}
+
+function CommandResultContext({ item }: { item: CommandSearchResult }) {
+  if ((item.type === "workflow" || item.type === "micro_workflow") && item.toolSlugs.length) {
+    return <WorkflowStack toolSlugs={item.toolSlugs} limit={5} />;
+  }
+
+  if (item.type === "product") {
+    return <small>{item.description}</small>;
+  }
+
+  return <small>{item.graphContext}</small>;
+}
+
+function typeLabel(type: PublicSearchResultType) {
+  if (type === "product") return "Products";
+  if (type === "creator") return "Creators";
+  if (type === "workflow") return "Workflows";
+  if (type === "micro_workflow") return "Micro Workflows";
+  return "Results";
 }

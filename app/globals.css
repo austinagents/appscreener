@@ -18,7 +18,7 @@
 html { overflow-x: hidden; background: var(--bg); color: var(--text); }
 body { margin: 0; overflow-x: hidden; font-family: Arial, Helvetica, sans-serif; font-size: 14px; letter-spacing: 0; }
 a { color: inherit; text-decoration: none; }
-button, input { font: inherit; }
+button, input, textarea { font: inherit; }
 
 .topbar {
   position: sticky;
@@ -37,10 +37,11 @@ button, input { font: inherit; }
 .brandMark { display: grid; place-items: center; width: 34px; height: 34px; border: 1px solid var(--green); color: var(--green); background: #07140f; font-weight: 800; }
 .brand strong, .brand small { display: block; }
 .brand small { color: var(--muted); font-size: 11px; margin-top: 2px; }
-.searchBox { display: flex; gap: 8px; align-items: center; min-width: 220px; height: 36px; padding: 0 10px; border: 1px solid var(--line); background: var(--panel); color: var(--muted); }
-.searchBox input { width: 100%; border: 0; outline: 0; background: transparent; color: var(--text); }
+.searchBox { display: flex; gap: 8px; align-items: center; min-width: 220px; height: 36px; padding: 0 10px; overflow: hidden; border: 1px solid var(--line); background: var(--panel); color: var(--muted); white-space: nowrap; }
+.searchBox svg, .searchBox kbd { flex: 0 0 auto; }
+.searchBox input { width: 100%; min-width: 0; overflow: hidden; border: 0; outline: 0; background: transparent; color: var(--text); text-overflow: ellipsis; white-space: nowrap; }
 .commandTrigger { justify-content: flex-start; cursor: pointer; }
-.commandTrigger span { flex: 1; text-align: left; }
+.commandTrigger span { flex: 1 1 auto; min-width: 0; overflow: hidden; text-align: left; text-overflow: ellipsis; white-space: nowrap; }
 kbd { padding: 2px 6px; border: 1px solid var(--line); color: var(--green); background: #071015; font-size: 11px; }
 .commandOverlay {
   position: fixed;
@@ -61,6 +62,8 @@ kbd { padding: 2px 6px; border: 1px solid var(--line); color: var(--green); back
 .commandGroup > span { padding: 9px 10px 4px; color: var(--green); text-transform: uppercase; font-size: 10px; border-bottom: 1px solid var(--line); }
 .commandResults a { display: grid; grid-template-columns: minmax(0, 0.7fr) minmax(0, 1fr); gap: 10px; padding: 10px; border-bottom: 1px solid var(--line); }
 .commandResults a.active, .commandResults a:hover { background: rgba(34, 229, 139, 0.09); }
+.commandResultTitle { display: inline-flex; gap: 8px; align-items: center; min-width: 0; }
+.commandResultTitle .toolLogo { flex: 0 0 auto; }
 .commandResults span { color: var(--green); text-transform: uppercase; font-size: 10px; }
 .commandResults small { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .navTabs { display: flex; gap: 4px; align-items: center; }
@@ -3609,6 +3612,500 @@ a:hover .toolLogo {
   border-color: var(--border-strong);
 }
 
+.searchHero h1 {
+  font-size: clamp(30px, 4vw, 48px);
+}
+
+.searchSurface,
+.claimForm,
+.dashboardNav,
+.searchResultCard,
+.searchResultGroup,
+.searchExactPanel {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.024), transparent),
+    var(--bg-elevated);
+  box-shadow: var(--inner-highlight);
+}
+
+.searchSurface {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+}
+
+.searchPageForm {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  min-height: 52px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  background: #071015;
+}
+
+.searchPageForm input {
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--text);
+}
+
+.searchPageForm button,
+.claimForm button {
+  min-height: 36px;
+  border: 1px solid rgba(34, 229, 139, 0.42);
+  background: rgba(34, 229, 139, 0.1);
+  color: var(--green);
+  cursor: pointer;
+}
+
+.searchFilterRail,
+.searchTagRail,
+.claimActionRail {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.searchFilterRail a,
+.searchTagRail span,
+.claimStatusBadge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 0 9px;
+  border: 1px solid var(--line);
+  background: #071015;
+  color: var(--muted);
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.searchFilterRail a.active,
+.searchFilterRail a:hover {
+  border-color: var(--green);
+  color: var(--green);
+  background: rgba(34, 229, 139, 0.08);
+}
+
+.searchResultsStack {
+  display: grid;
+  gap: 12px;
+}
+
+.searchExactPanel {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border-color: rgba(34, 229, 139, 0.36);
+}
+
+.searchExactHeader {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.searchExactTitle {
+  display: grid;
+  gap: 5px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  background: #071015;
+}
+
+.searchExactIdentity,
+.searchResultIdentity > span:first-child {
+  display: flex;
+  min-width: 0;
+  gap: 8px;
+  align-items: center;
+}
+
+.searchExactIdentity .toolStack,
+.searchResultIdentity .toolStack {
+  min-width: auto;
+}
+
+.searchExactTitle strong {
+  font-size: 22px;
+}
+
+.searchExactTitle small {
+  color: var(--muted);
+}
+
+.searchRelationshipGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.searchRelationshipBucket {
+  display: grid;
+  gap: 6px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  background: #071015;
+}
+
+.searchRelationshipBucket strong,
+.searchRelationshipBucket span {
+  color: var(--muted);
+  font-size: 10px;
+  text-transform: uppercase;
+}
+
+.searchRelationshipBucket a {
+  color: var(--text);
+  font-size: 12px;
+}
+
+.searchResultGroup {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+}
+
+.searchResultRows {
+  display: grid;
+  gap: 8px;
+}
+
+.searchResultRow {
+  display: grid;
+  grid-template-columns: minmax(170px, 0.55fr) minmax(220px, 1fr) minmax(220px, 1fr) minmax(170px, 0.8fr);
+  gap: 10px;
+  align-items: center;
+  padding: 10px;
+  border: 1px solid var(--line);
+  background: #071015;
+  transition: border-color 180ms var(--ease-out), background 180ms var(--ease-out);
+}
+
+.searchResultRow:hover {
+  border-color: rgba(34, 229, 139, 0.42);
+  background: rgba(34, 229, 139, 0.055);
+}
+
+.searchResultIdentity {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.searchResultIdentity strong {
+  min-width: 0;
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.searchResultRow p,
+.searchResultRow small {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.searchResultGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.searchResultCard {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  min-height: 210px;
+  transition: border-color 180ms var(--ease-out), background 180ms var(--ease-out), transform 180ms var(--ease-out);
+}
+
+.searchResultCard:hover {
+  transform: translateY(-1px);
+  border-color: rgba(34, 229, 139, 0.42);
+  background: rgba(34, 229, 139, 0.055);
+}
+
+.searchResultTop {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+}
+
+.searchTypeBadge {
+  color: var(--green);
+  font-size: 10px;
+  text-transform: uppercase;
+}
+
+.searchResultCard > strong {
+  font-size: 18px;
+}
+
+.searchResultCard p {
+  margin: 0;
+}
+
+.searchGraphContext {
+  padding: 9px;
+  border: 1px solid rgba(70, 217, 255, 0.2);
+  background: rgba(70, 217, 255, 0.055);
+  color: var(--cyan);
+  font-size: 12px;
+}
+
+.claimStatusBadge.pending {
+  border-color: rgba(246, 199, 74, 0.55);
+  color: var(--amber);
+  background: rgba(246, 199, 74, 0.08);
+}
+
+.claimStatusBadge.claimed,
+.claimStatusBadge.verified {
+  border-color: rgba(34, 229, 139, 0.45);
+  color: var(--green);
+  background: rgba(34, 229, 139, 0.08);
+}
+
+.claimGrid,
+.dashboardGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
+  gap: 12px;
+  align-items: start;
+}
+
+.claimForm {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+}
+
+.claimForm label {
+  display: grid;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.claimForm input,
+.claimForm textarea {
+  width: 100%;
+  min-height: 38px;
+  padding: 9px 10px;
+  border: 1px solid var(--line);
+  background: #071015;
+  color: var(--text);
+  outline: 0;
+  text-transform: none;
+}
+
+.claimForm textarea {
+  min-height: 108px;
+  resize: vertical;
+}
+
+.claimSidePanel .miniRow {
+  align-items: flex-start;
+}
+
+.claimConfirmation {
+  max-width: 780px;
+}
+
+.dashboardGrid {
+  grid-template-columns: 240px minmax(0, 1fr);
+}
+
+.dashboardNav {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+}
+
+.dashboardNav strong,
+.dashboardNav span {
+  display: block;
+  padding: 9px 10px;
+  border: 1px solid var(--line);
+  background: #071015;
+}
+
+.dashboardNav strong {
+  color: var(--green);
+}
+
+.dashboardMain {
+  display: grid;
+  gap: 10px;
+}
+
+.dashboardIdentity {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.dashboardIdentity strong,
+.dashboardIdentity small {
+  display: block;
+}
+
+.dashboardIdentity small {
+  color: var(--muted);
+}
+
+.dashboardChoice {
+  transition: border-color 180ms var(--ease-out), background 180ms var(--ease-out), transform 180ms var(--ease-out);
+}
+
+.dashboardChoice:hover {
+  transform: translateY(-1px);
+  border-color: rgba(34, 229, 139, 0.42);
+}
+
+.ownershipPrompt {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+}
+
+.ownershipPrompt p,
+.ownershipUnlockCopy {
+  margin: 0;
+  color: var(--muted);
+}
+
+.ownershipUnlockCopy {
+  margin-top: 10px;
+  max-width: 720px;
+  font-size: 12px;
+}
+
+.dashboardNav a,
+.dashboardNav span {
+  display: block;
+  padding: 9px 10px;
+  border: 1px solid var(--line);
+  background: #071015;
+  color: var(--muted);
+}
+
+.dashboardNav a:hover {
+  border-color: rgba(34, 229, 139, 0.42);
+  color: var(--green);
+}
+
+.ownershipMetricGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.ownershipFormGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.ownershipFormGrid label {
+  display: grid;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.ownershipFormGrid label.wide {
+  grid-column: 1 / -1;
+}
+
+.ownershipFormGrid input {
+  width: 100%;
+  min-height: 38px;
+  padding: 9px 10px;
+  border: 1px solid var(--line);
+  background: #071015;
+  color: var(--text);
+  outline: 0;
+}
+
+.ownershipRows {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.ownershipRows .miniRow {
+  align-items: center;
+}
+
+.ownershipRows small {
+  display: block;
+}
+
+.ownershipChipRail {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ownershipChipRail span,
+.ownershipChipRail button {
+  min-height: 30px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  background: #071015;
+  color: var(--muted);
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.ownershipChipRail span {
+  border-color: rgba(70, 217, 255, 0.26);
+  color: var(--cyan);
+}
+
+.ownershipChipRail button {
+  cursor: pointer;
+  color: var(--green);
+}
+
+.ownershipPreview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.ownershipPreview span {
+  flex: 1 1 220px;
+}
+
+.ownershipPreview strong,
+.ownershipPreview small {
+  display: block;
+}
+
+.ownershipPreview small {
+  color: var(--muted);
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -3623,6 +4120,15 @@ a:hover .toolLogo {
 @media (max-width: 1320px) {
   .homeTertiary {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .searchResultGrid,
+  .searchRelationshipGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .searchResultRow {
+    grid-template-columns: minmax(170px, 0.65fr) minmax(0, 1fr);
   }
 }
 
@@ -3649,6 +4155,24 @@ a:hover .toolLogo {
 @media (max-width: 1120px) {
   .topbar {
     grid-template-columns: 1fr;
+  }
+
+  .claimGrid,
+  .dashboardGrid,
+  .searchResultGrid,
+  .searchRelationshipGrid,
+  .ownershipMetricGrid,
+  .ownershipFormGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .searchResultRow {
+    grid-template-columns: 1fr;
+  }
+
+  .ownershipPrompt {
+    align-items: flex-start;
+    flex-direction: column;
   }
 
   .toolProfileTop,

@@ -43,6 +43,7 @@ export type TrustedDiscoverySource = "Product Hunt" | "TAAFT";
 export type ListingStatus = "accepted" | "pending_source" | "pending_review" | "rejected";
 export type SizeClass = "Micro" | "Emerging" | "Growth" | "Major" | "Mega";
 export type RankingMode = "Trending" | "Most Used" | "Breaking Out" | "Blue Chips" | "New" | "Fastest Growing" | "Most Discussed" | "Most Saved" | "Boosted";
+export type ClaimStatus = "unclaimed" | "pending" | "claimed" | "verified";
 
 export type Platform = "Web" | "macOS" | "Windows" | "iOS" | "Android" | "Chrome" | "API" | "Slack" | "Discord" | "Figma" | "VS Code";
 
@@ -51,6 +52,7 @@ export type Tool = {
   name: string;
   slug: string;
   description: string;
+  tagline: string;
   longDescription: string;
   category: CategoryName;
   categories: CategoryName[];
@@ -320,6 +322,31 @@ export type CreatorProfile = {
   listingStatus?: ListingStatus;
   sourceConfidence?: number;
   verificationSignals?: string[];
+};
+
+export type CreatorClaimRequest = {
+  id: string;
+  creatorId: string;
+  name: string;
+  email: string;
+  socialProofUrl: string;
+  preferredProfileUrl?: string;
+  note?: string;
+  status: "pending_review" | "approved" | "rejected";
+  submittedAt: string;
+};
+
+export type ProductClaimRequest = {
+  id: string;
+  toolSlug: string;
+  requesterName: string;
+  workEmail: string;
+  role: string;
+  websiteUrl: string;
+  claimProof: string;
+  note?: string;
+  status: "pending_review" | "approved" | "rejected";
+  submittedAt: string;
 };
 
 export type AttentionFeedItem = {

@@ -4,6 +4,354 @@ AppScreener is a live AI ecosystem screener. The product is moving beyond a dire
 
 The MVP is intentionally dark, dense, and terminal-inspired. It should feel like an operational AI attention terminal, not a generic SaaS landing page or static AI tools directory.
 
+## Canonical Operating Context
+
+This section is the current authoritative AppScreener architecture and strategic direction after Workflow Architecture V2 and Workflow Education V2.
+
+### Current Project Phase
+
+Current Phase: Phase 2 - Ecosystem Activation / Beta Readiness
+
+Primary Objective: activate the creator/product ecosystem so users can discover, creators can participate, and products can participate.
+
+NOT:
+
+- roadmap expansion
+- mass ingestion
+- monetization flows
+- Supabase migration before it is required
+
+Priority:
+
+1. Professional Search / Discovery
+2. Creator Claiming
+3. Product Claiming
+
+Every major feature should support beta onboarding through discovery, creator participation, or product participation.
+
+Current focus:
+
+- professional graph-aware search
+- creator profile claiming
+- product profile claiming
+- lightweight ownership dashboard shells
+- pending-review ownership flow
+
+### Workflow Laws (Locked)
+
+Public Workflow:
+
+- Ordered operating procedure
+- Outcome-first
+- Not a category
+- Not a topic
+- Not a tool collection
+- Target: 3-4 tools
+- Absolute max: 5 tools
+- Each step should produce a concrete artifact
+- Each step should have a clear handoff
+
+Micro Workflow:
+
+- Atomic transformation
+- Target: 1-2 tools
+- Absolute max: 2 tools
+- Represents one repeatable operation
+- Must not become a mini workflow
+- Must not become a category
+
+Examples:
+
+- Public Workflow: SaaS In A Weekend
+- Micro Workflow: Frontend Generation
+
+Workflow Count: 30 canonical public workflows
+
+Micro Workflow Count: 13 canonical micro workflows
+
+### Graph Hierarchy (Locked)
+
+Category
+down to Attention Topic
+down to Workflow
+down to Micro Workflow
+down to Tool
+
+Example:
+
+- Category: Marketing
+- Attention Topic: Lead Generation
+- Workflow: Founder Outbound Engine
+- Micro Workflow: Lead Enrichment
+- Tool: Clay
+
+Important:
+
+- Attention Topics are NOT workflows.
+- Workflows are NOT tools.
+- Micro Workflows are NOT mini categories.
+- Tools are implementation nodes.
+
+### Workflow Education V2 (Locked)
+
+Purpose: teach operator thinking.
+
+Do NOT merely explain tools.
+
+Every workflow step should answer:
+
+1. What to do
+2. What you are looking for
+3. What you get
+4. You did this right if
+5. Why it matters
+
+Goal:
+
+Users should learn:
+
+- what to look for
+- why the step exists
+- how experts think
+- how to recognize good outputs
+
+The objective is workflow education, not tool education.
+
+Current implementation uses:
+
+`WorkflowEducationStep`
+
+```ts
+{
+  do: string;
+  look: string;
+  get: string;
+  check: string;
+  why: string;
+}
+```
+
+UI mapping:
+
+- `task` = What to do + What to look for
+- `output` = What you get
+- `connection` = You did this right if + Why it matters
+
+### Graph Philosophy (Locked)
+
+Tools are not the product.
+
+Relationships are the product.
+
+The graph is the asset.
+
+Pages are views into the graph.
+
+Core graph:
+
+Tool to Workflow to Creator to Topic to Evidence
+
+Graph value comes from:
+
+- relationship density
+- relationship quality
+- relationship trust
+- graph traversal
+
+Not from raw node count.
+
+### Graph Edge Philosophy (Locked)
+
+Edge = relationship between nodes.
+
+Examples:
+
+- Claude to Cursor
+- Claude to SaaS In A Weekend
+- Creator to Claude
+- Workflow to Topic
+- Tool to Topic
+- Evidence to Tool
+
+Important:
+
+Node count is less valuable than edge count.
+
+100 tools + 500 relationships can be more valuable than 3000 tools + 50 relationships.
+
+Future features should:
+
+1. Create edges
+2. Validate edges
+3. Improve traversal
+
+Otherwise question why the feature exists.
+
+### Product Positioning (Locked)
+
+AppScreener is NOT:
+
+- AI Directory
+- Tool List
+- Software Catalog
+
+Closer to:
+
+- Ecosystem Intelligence Platform
+- AI Knowledge Graph
+- Workflow Discovery Engine
+- Creator Adoption Intelligence
+
+Core Question:
+
+How do the best people solve real problems with AI?
+
+Current strongest product model:
+
+Tool to Workflow to Creator to Topic to Evidence
+
+### Ingestion Philosophy (Locked)
+
+TAAFT is an ingestion source.
+
+TAAFT is NOT:
+
+- the product
+- the taxonomy
+- the intelligence layer
+- the graph
+
+AppScreener owns:
+
+- categories
+- attention topics
+- workflows
+- micro workflows
+- creator relationships
+- evidence
+- graph structure
+
+Canonical pipeline:
+
+Raw Tool Candidate
+down to Normalize
+down to Classify
+down to Connect
+down to Promote to Canonical Tool
+
+TAAFT is only a source feed.
+
+The graph is the product.
+
+### Database Philosophy (Locked)
+
+Do NOT introduce Supabase early.
+
+Reason: schema is still evolving.
+
+Current phase uses:
+
+Static canonical datasets
+
+Only introduce Supabase after:
+
+- workflow model stabilizes
+- relationship model stabilizes
+- graph model stabilizes
+
+Target: 1-2 weeks of architecture stability before migration.
+
+Lesson learned:
+
+Do not repeat migration-heavy workflow used in previous projects.
+
+### Creator Philosophy (Locked)
+
+Creators are not content objects.
+
+Creators are graph nodes.
+
+Purpose:
+
+Connect tools to real-world operators.
+
+Long-term value:
+
+Users discover tools through people.
+
+Not categories.
+
+Question:
+
+What tools do the best operators actually use?
+
+Not:
+
+What are the top AI tools?
+
+### Workflow Philosophy (Locked)
+
+Workflows exist to:
+
+1. Teach users
+2. Create graph edges
+3. Create tool context
+
+Workflows are operating procedures.
+
+Not tool collections.
+
+Not categories.
+
+Not lists.
+
+Every workflow should create:
+
+- Tool to Tool
+- Tool to Workflow
+- Workflow to Topic
+- Workflow to Creator relationships
+
+### Long-Term Product Direction
+
+Current: pages
+
+Future: graph, with pages becoming views into the graph.
+
+Users should be able to naturally traverse:
+
+Tool to Workflow to Creator to Related Tool to Topic to Evidence
+
+without needing a dedicated graph visualization.
+
+Primary objective:
+
+Graph Traversal
+
+Not Graph Visualization.
+
+The graph exists behind the scenes.
+
+The user experiences:
+
+Discovery to Relationships to Evidence to Understanding to Action
+
+### Most Important Rule
+
+We are not collecting tools.
+
+We are collecting evidence.
+
+Tool existence is weak evidence.
+
+Relationships create value.
+
+Evidence creates trust.
+
+Graph traversal creates utility.
+
+The graph is the moat.
+
 ## Current Platform Capabilities
 
 - Homepage command center with Trending Tools, category filters, Creator Graph, Trending Workflows, Attention Heatmap, movement modules, and monetization surfaces.
@@ -11,7 +359,11 @@ The MVP is intentionally dark, dense, and terminal-inspired. It should feel like
 - Dedicated `/heatmap` exploration page separate from the homepage heatmap widget.
 - Unified ecosystem tag route at `/tags/[tag]` for creator tags and heatmap attention tags.
 - Creator pages and creator tag pages with accepted-only public creator gating and separated verified-tool versus mentioned-tool relationship surfaces.
-- Workflow pages and workflow listings backed by local workflow/tool relationships.
+- Creator profile claiming at `/claim/creator/[id]` with static pending-review beta flow and lightweight creator dashboard shell.
+- Product claiming at `/claim/product/[slug]` with static pending-review beta flow and lightweight product dashboard shell.
+- Professional graph-aware discovery at `/search`, shared with the command palette through `lib/search.ts`.
+- Workflow pages and workflow listings backed by 30 canonical public workflows, 13 canonical micro workflows, and local workflow/tool relationships.
+- Workflow detail pages use Workflow Education V2 copy to teach operator thinking through `do`, `look`, `get`, `check`, and `why` fields mapped into the existing tab UI.
 - V1 Trusted Adoption Graph with accepted creator-tool, workflow-tool, and derived creator-workflow relationships, now locked to trust-safe V1 semantics.
 - Category pages backed by the shared category and ecosystem color systems.
 - Compare, Watchlist, Breaking Out, Moving, Events, Narratives, and private Operator routes.
@@ -39,10 +391,17 @@ Public pages:
 - `/narratives`
 - `/compare`
 - `/watchlist`
+- `/search`
+- `/claim/creator/[id]`
+- `/claim/product/[slug]`
+- `/dashboard`
+- `/dashboard/creator`
+- `/dashboard/product`
 
 Private/operator page:
 
 - `/operator`
+- `/operator/claims`
 
 API preview routes:
 

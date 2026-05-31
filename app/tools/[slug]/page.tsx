@@ -19,13 +19,15 @@ import {
   Workflow,
   Zap
 } from "lucide-react";
+import { ClaimStatusBadge } from "@/components/claims/claim-status";
 import { CreatorAvatar } from "@/components/creator-avatar";
 import { MovementBadge } from "@/components/movement-badge";
 import { SaveButton } from "@/components/save-button";
 import { ToolLogo } from "@/components/tool-logo";
 import { WorkflowStack } from "@/components/workflow-stack";
-import { creators, creatorSignals, creatorToolRelationships, edgesForTool, getTool, tools, toolsForWorkflow, workflows } from "@/lib/data";
+import { creators, creatorSignals, creatorToolRelationships, edgesForTool, getTool, productClaimStatus, tools, toolsForWorkflow, workflows } from "@/lib/data";
 import { ecosystemTagSlug } from "@/lib/ecosystem-tags";
+import { betaEventBootstrapScript } from "@/lib/events";
 import { displayCategory } from "@/lib/format";
 import type { CreatorProfile, CreatorToolRelationship, Tool, Workflow as WorkflowType } from "@/lib/types";
 
@@ -37,7 +39,7 @@ const navSections = [
       { href: "/", label: "Trending", icon: TrendingUp },
       { href: "/heatmap", label: "Heatmap", icon: Grid2X2 },
       { href: "/categories/ai-coding", label: "Categories", icon: Tag },
-      { href: "/", label: "Search", icon: Search }
+      { href: "/search", label: "Search", icon: Search }
     ]
   },
   {
@@ -61,9 +63,9 @@ const navSections = [
   {
     title: "For Builders",
     items: [
-      { href: "/", label: "Boost visibility", icon: Zap },
-      { href: "/", label: "Ad placements", icon: Megaphone },
-      { href: "/", label: "Analytics", icon: BarChart3 }
+      { href: "/dashboard/product", label: "Product dashboard", icon: Zap },
+      { href: "/dashboard/product", label: "Claim status", icon: Megaphone },
+      { href: "/dashboard", label: "Ownership", icon: BarChart3 }
     ]
   }
 ];
@@ -111,9 +113,11 @@ export default function ToolPage({ params }: { params: { slug: string } }) {
   const relatedTags = [...new Set([...tool.subCategoryTags, ...tool.tags.slice(0, 5)])].slice(0, 8);
   const rank = [...tools].sort((a, b) => b.organicTrendingScore - a.organicTrendingScore).findIndex((item) => item.slug === tool.slug) + 1;
   const movementReasons = reasonsForTool(tool, usedIn.length, edgeTools.length, connectedCreators.length, recentSignals.length);
+  const claimStatus = productClaimStatus(tool.slug);
 
   return (
     <div className="toolIntelShell">
+      <script dangerouslySetInnerHTML={{ __html: productProfileEventScript(tool.slug) }} />
       <ToolSidebar />
 
       <div className="toolIntelWorkspace">
@@ -127,8 +131,11 @@ export default function ToolPage({ params }: { params: { slug: string } }) {
                 <p className="toolHeroCategory">{displayCategory(tool.category)}</p>
                 <p className="toolHeroDescription">{tool.description}</p>
                 <TagRail tool={tool} tags={relatedTags.slice(0, 5)} />
+                <p className="ownershipUnlockCopy">Claiming unlocks product info management, workflow association requests, creator adjacency, and topic/use-case positioning after review.</p>
                 <div className="toolHeroActions">
                   <a className="iconTextButton primaryWebsiteButton" href={tool.websiteUrl} target="_blank" rel="noreferrer">Visit website <ExternalLink size={14} /></a>
+                  <a className="iconTextButton" href={`/claim/product/${tool.slug}`} data-beta-product-claim-cta="true">{claimStatus === "pending" ? "View Claim" : "Claim Product"}</a>
+                  <ClaimStatusBadge status={claimStatus} />
                   <SaveButton kind="tools" id={tool.slug} label="Add to watchlist" />
                 </div>
               </div>
@@ -146,7 +153,7 @@ export default function ToolPage({ params }: { params: { slug: string } }) {
               </div>
             </Panel>
 
-            <Panel title={`Creators connected to ${tool.name}`} subtitle="Accepted uses and teaches relationships">
+            <Panel title="Related Creators" subtitle={`Accepted creator relationships connected to ${tool.name}`}>
               {connectedCreators.length ? (
                 <div className="toolCreatorShelf">
                   {connectedCreators.map(({ creator, relationshipType }) => <CreatorCard creator={creator} relationshipType={relationshipType} key={creator.id} />)}
@@ -156,7 +163,7 @@ export default function ToolPage({ params }: { params: { slug: string } }) {
               )}
             </Panel>
 
-            <Panel title="Popular in these workflows" subtitle="Real workflows from creators and builders">
+            <Panel title="Used In Workflows" subtitle="Workflow contexts where this product appears">
               {usedIn.length ? (
                 <div className="toolWorkflowShelf">
                   {usedIn.map((workflow) => <WorkflowCard workflow={workflow} key={workflow.id} />)}
@@ -204,6 +211,14 @@ export default function ToolPage({ params }: { params: { slug: string } }) {
               <TagRail tool={tool} tags={relatedTags} />
             </Panel>
 
+            <Panel title="Topics / Best For">
+              <div className="toolAboutTable">
+                <InfoRow label="Best for" value={tool.useCases.slice(0, 3).join(", ")} />
+                <InfoRow label="Topics" value={relatedTags.slice(0, 5).join(", ")} />
+                <InfoRow label="Categories" value={tool.categories.map(displayCategory).join(", ")} />
+              </div>
+            </Panel>
+
             <Panel title={`Tools often used with ${tool.name}`}>
               <div className="toolMiniList">
                 {(edgeTools.length ? edgeTools : related).slice(0, 5).map((item) => <ToolMiniRow tool={item} key={item.slug} />)}
@@ -220,6 +235,20 @@ export default function ToolPage({ params }: { params: { slug: string } }) {
       </div>
     </div>
   );
+}
+
+function productProfileEventScript(toolSlug: string) {
+  return `
+    ${betaEventBootstrapScript()}
+    document.addEventListener("click", function(event) {
+      var target = event.target && event.target.closest ? event.target.closest("[data-beta-product-claim-cta]") : null;
+      if (!target) return;
+      window.__appscreenerTrackBetaEvent && window.__appscreenerTrackBetaEvent("product_claim_cta_clicked", {
+        toolSlug: ${JSON.stringify(toolSlug)},
+        source: "product_profile"
+      });
+    });
+  `;
 }
 
 function ToolSidebar() {

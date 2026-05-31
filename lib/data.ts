@@ -6,7 +6,7 @@ import { logoAssets } from "./logo-assets";
 import { normalizeAudienceTags, normalizeCreatorSpecializations, normalizeCreatorTypes, normalizeInfluenceTags, normalizePlatformFocus, primarySpecializationFrom } from "./creator-tags";
 import { calculateListingScore, listingChecksForSeed, listingStatusFromChecks, trustedSourceUrls, trustedSourcesForSeed } from "./listing-policy";
 import { breakingOutScoreFor, estimateUsers, organicRankingLabel, organicTrendingScoreFor, rankingModeSort, sizeClassForUsers } from "./ranking";
-import type { AttentionFeedItem, AttentionSubCategory, BoostTier, Category, CategoryName, CreatorProfile, CreatorSignal, CreatorToolRelationship, CreatorWorkflowRelationship, DiscoveryEdge, FeatureFlag, LogoSource, MicroWorkflow, MicroWorkflowToolRelationship, MovementEvent, Platform, PricingType, PromotionPlacement, Tool, Workflow, WorkflowMicroWorkflowRelationship, WorkflowToolRelationship } from "./types";
+import type { AttentionFeedItem, AttentionSubCategory, BoostTier, Category, CategoryName, ClaimStatus, CreatorClaimRequest, CreatorProfile, CreatorSignal, CreatorToolRelationship, CreatorWorkflowRelationship, DiscoveryEdge, FeatureFlag, LogoSource, MicroWorkflow, MicroWorkflowToolRelationship, MovementEvent, Platform, PricingType, ProductClaimRequest, PromotionPlacement, Tool, Workflow, WorkflowMicroWorkflowRelationship, WorkflowToolRelationship } from "./types";
 
 const categoryNames: CategoryName[] = [
   "AI Video",
@@ -133,6 +133,7 @@ type ImportedTaaftTool = {
   name: string;
   slug: string;
   description: string;
+  tagline?: string;
   longDescription: string;
   websiteUrl: string;
   category: CategoryName;
@@ -275,6 +276,10 @@ const rawTools: Array<[string, CategoryName, string, string, string, string, num
   ["Google Maps", "AI Research", "Local search and mapping platform used to discover businesses, locations, and market context.", "https://www.google.com/maps", "Free", "2005-01-01", 480, 4400, 28000, 5, 11, 34, 4, 76]
 ] as const;
 
+function productTaglineFor(value: string) {
+  return value.replace(/\s+/g, " ").trim();
+}
+
 const baseTools: Tool[] = rawTools.map((item, index) => {
   const [name, rawCategory, description, websiteUrl, pricingSummary, launchDate, mentions24h, mentions7d, savesCount, growth24h, growth7d, creatorMentions, workflowInclusions, searchInterest] = item;
   const displayName = normalizeProductDisplayName(name);
@@ -295,6 +300,7 @@ const baseTools: Tool[] = rawTools.map((item, index) => {
     name: displayName,
     slug,
     description,
+    tagline: productTaglineFor(description),
     longDescription: `${description} AppScreener tracks its attention velocity, workflow spread, category rotation, and breakout history so teams can understand why it is moving.`,
     category,
     categories: [category],
@@ -417,6 +423,7 @@ function importedRecordToTool(record: ImportedTaaftTool, index: number): Tool {
     name: displayName,
     slug,
     description: record.description,
+    tagline: productTaglineFor(record.tagline ?? record.description),
     longDescription: record.longDescription,
     category,
     categories: [...new Set([category, ...(record.categories?.map(APP_CATEGORY) ?? [])])],
@@ -515,6 +522,7 @@ const mergedBaseTools = baseTools.map((baseTool) => {
   if (!imported) return baseTool;
   return {
     ...baseTool,
+    tagline: productTaglineFor(baseTool.tagline || imported.tagline || baseTool.description || imported.description),
     categories: [...new Set([...baseTool.categories, ...imported.categories])],
     rawSourceCategories: [...new Set([...baseTool.rawSourceCategories, ...imported.rawSourceCategories])],
     tags: [...new Set([...baseTool.tags, ...imported.tags])].slice(0, 12),
@@ -1813,6 +1821,51 @@ export const creatorIntelligenceStatus = {
 };
 
 export const creatorSignals: CreatorSignal[] = [];
+
+export const creatorClaimRequests: CreatorClaimRequest[] = [
+  {
+    id: "creator_claim_simon_willison_pending",
+    creatorId: "creator_simon-willison",
+    name: "Simon Willison",
+    email: "simon@example.com",
+    socialProofUrl: "https://x.com/simonw",
+    preferredProfileUrl: "/creators/creator_simon-willison",
+    note: "Mock pending claim used to validate the Phase 2 creator ownership flow.",
+    status: "pending_review",
+    submittedAt: "2026-05-30T10:00:00.000Z"
+  }
+];
+
+export const productClaimRequests: ProductClaimRequest[] = [
+  {
+    id: "product_claim_clay_pending",
+    toolSlug: "clay",
+    requesterName: "Clay GTM Team",
+    workEmail: "team@example.com",
+    role: "Product operator",
+    websiteUrl: "https://clay.com",
+    claimProof: "Mock pending claim used to validate the Phase 2 product ownership flow.",
+    note: "Product ownership requests stay pending until AppScreener review.",
+    status: "pending_review",
+    submittedAt: "2026-05-30T10:05:00.000Z"
+  }
+];
+
+export function creatorClaimStatus(creatorId: string): ClaimStatus {
+  const request = creatorClaimRequests.find((claim) => claim.creatorId === creatorId);
+  if (!request) return "unclaimed";
+  if (request.status === "approved") return "claimed";
+  if (request.status === "pending_review") return "pending";
+  return "unclaimed";
+}
+
+export function productClaimStatus(toolSlug: string): ClaimStatus {
+  const request = productClaimRequests.find((claim) => claim.toolSlug === toolSlug);
+  if (!request) return "unclaimed";
+  if (request.status === "approved") return "claimed";
+  if (request.status === "pending_review") return "pending";
+  return "unclaimed";
+}
 
 export const attentionFeed: AttentionFeedItem[] = [
   { id: "feed_1", title: "Cursor coding-agent momentum rising", description: "Coding-agent tools are clustering around build workflow comparisons.", severity: "high", entityType: "tool", entitySlug: "cursor", timestamp: "4 min ago" },
